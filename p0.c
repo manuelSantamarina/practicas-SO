@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <readline/readline.h>
+#include <readline.h>
 
 //Autores
 #define AUTOR_1_N "Manuel Santamariña Ruiz de León"
@@ -70,6 +70,20 @@ int fecha(char *tokens[], int ntokens){
     }
     return 0;
 }
+
+int infosis(char *tokens[], int ntokens){
+     struct utsname sysinfo;
+
+    if( uname( &sysinfo ) == -1 ) {
+       perror( "uname" );
+       return EXIT_FAILURE;
+    }
+    printf( "Nombre de sistema  : %s\n", sysinfo.sysname );
+    printf( "Nombre de equipo: %s\n", sysinfo.nodename );
+    printf( "Versión de kernel: %s\n", sysinfo.release );
+    printf( "version name : %s\n", sysinfo.version );
+    return EXIT_SUCCESS;
+}
 int fin(char *tokens[], int ntokens) {
     return 1;
 }
@@ -83,6 +97,8 @@ struct cmd cmds[] = {
     {"autores", autores},
     {"pid", pid},
     {"carpeta", carpeta},
+    {"fecha", fecha},
+    {"infosis", infosis},
     {"fin", fin},
     {NULL, NULL}
 };
