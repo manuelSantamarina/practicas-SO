@@ -68,6 +68,7 @@ int fecha(char *tokens[], int ntokens){
         //imprime la hora en formato hh:mm:ss
         printf("%02d:%02d:%02d\n",tm.tm_hour, tm.tm_min, tm.tm_sec);
     }
+    return 0;
 }
 int fin(char *tokens[], int ntokens) {
     return 1;
