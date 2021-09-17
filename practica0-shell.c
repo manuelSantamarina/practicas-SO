@@ -37,8 +37,7 @@ void procesarEntrada(char buffer[]){
        token = strtok(NULL, delim);
    }*/
 
-   switch (op)
-   {
+   switch(op){
    case 0: //autores
         if (/* condition */)
         {

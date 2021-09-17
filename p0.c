@@ -35,10 +35,22 @@ int autores(char *tokens[], int ntokens) {
         printf("\n");
     return 0;
 }
-int pid(){
+int pid(char *tokens[], int ntokens){
     return getpid()
-    if(/*-p*/)
-    return getppid()
+    if(/*-p*/){
+        return getppid()
+    }
+}
+
+int carpeta(char *tokens[], int ntokens){
+    //sacamos argumento de los tokens
+
+    if(/*hay argumento*/){
+    chdir(/* argumento */);
+    }else{
+        //devolvemos el directorio actual
+    printf("%s\n", getcwd(s, 100));
+    }
 }
 
 
@@ -54,6 +66,7 @@ struct cmd {
 struct cmd cmds[] = {
     {"autores", autores},
     {"pid", pid},
+    {"carpeta", carpeta},
     {"fin", fin},
     {NULL, NULL}
 };
