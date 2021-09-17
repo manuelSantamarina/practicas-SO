@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <readline/readline.h>
 
 //Autores
@@ -51,9 +52,23 @@ int carpeta(char *tokens[], int ntokens){
         //devolvemos el directorio actual
     printf("%s\n", getcwd(s, 100));
     }
+    return 0;
 }
 
+int fecha(char *tokens[], int ntokens){
+     time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    printf("%02d:%02d:%02d\n",tm.tm_hour, tm.tm_min, tm.tm_sec);
+    if( /*-d*/){
+        //imprime la fecha en formato DD/MM/AAAA
+        printf("%02d/%02d/%d", tm.tm_mday,tm.tm_mon+1,tm.tm_year+1900);
+    } 
 
+    if( /*-h*/){
+        //imprime la hora en formato hh:mm:ss
+        printf("%02d:%02d:%02d\n",tm.tm_hour, tm.tm_min, tm.tm_sec);
+    }
+}
 int fin(char *tokens[], int ntokens) {
     return 1;
 }
