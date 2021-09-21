@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <readline.h>
+#include <readline/readline.h>
 
 //Autores
 #define AUTOR_1_N "Manuel Santamariña Ruiz de León"
@@ -27,31 +27,31 @@ int parseString(char * cadena, char * trozos[]) {
 //autores
 int autores(char *tokens[], int ntokens) {
     //TODO
-    printf("Autores:\n")
-    if(/* -l */){
-        printf("%s\n",AUTOR_1_L,AUTOR_2_L);
-    }else if (/* -n */){
-        printf("%s\n",AUTOR_1_N,AUTOR_2_N);
+    printf("Autores:\n");
+    if(ntokens==1){
+        printf("%s (%s)\n",AUTOR_1_N,AUTOR_1_L);
+        printf("%s (%s)\n",AUTOR_2_N,AUTOR_2_L);
+
+    }else if (ntokens==2 && strcmp(tokens[1],"-l")){
+        printf("%s\n",AUTOR_1_L);
+        printf("%s\n",AUTOR_2_L);
+    }else if (ntokens==2 && strcmp(tokens[1],"-n")){
+        printf("%s\n",AUTOR_1_N);
+        printf("%s\n",AUTOR_2_N);
     }
         printf("\n");
     return 0;
-}
-int pid(char *tokens[], int ntokens){
-    return getpid()
-    if(/*-p*/){
-        return getppid()
-    }
-}
+}   
 
 int carpeta(char *tokens[], int ntokens){
     //sacamos argumento de los tokens
-
-    if(/*hay argumento*/){
-    chdir(/* argumento */);
+    
+    if(ntokens == 2 && strcmp(tokens[1],"-l")){
+    chdir(tokens[1]);
     }else{
-        //devolvemos el directorio actual
     printf("%s\n", getcwd(s, 100));
     }
+
     return 0;
 }
 
