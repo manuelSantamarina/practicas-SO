@@ -34,10 +34,10 @@ int autores(char *tokens[], int ntokens) {
         printf("%s (%s)\n",AUTOR_1_N,AUTOR_1_L);
         printf("%s (%s)\n",AUTOR_2_N,AUTOR_2_L);
 
-    }else if (ntokens==2 && strcmp(tokens[1],"-l")){
+    }else if (ntokens==2 && !strcmp(tokens[1],"-l")){
         printf("%s\n",AUTOR_1_L);
         printf("%s\n",AUTOR_2_L);
-    }else if (ntokens==2 && strcmp(tokens[1],"-n")){
+    }else if (ntokens==2 && !strcmp(tokens[1],"-n")){
         printf("%s\n",AUTOR_1_N);
         printf("%s\n",AUTOR_2_N);
     }
@@ -47,7 +47,7 @@ int autores(char *tokens[], int ntokens) {
 
 int carpeta(char *tokens[], int ntokens){
     //sacamos argumento de los tokens
-    char cwd[] = "current working directory";
+    char cwd[100] = "current working directory";
     getcwd(cwd, 100);
     if(ntokens == 2 && strcmp(tokens[1],"-l")){
     chdir(tokens[1]);
@@ -61,16 +61,18 @@ int carpeta(char *tokens[], int ntokens){
 int fecha(char *tokens[], int ntokens){
      time_t t = time(NULL);
     struct tm tm = *localtime(&t);
-    printf("%02d:%02d:%02d\n",tm.tm_hour, tm.tm_min, tm.tm_sec);
-    if( /*-d*/){
+
+    printf("ntokens: %d tokens[1]: %s\n\n",ntokens,tokens[1]);
+    if(ntokens== 2 && !strcmp(tokens[1],"-d")){
         //imprime la fecha en formato DD/MM/AAAA
         printf("%02d/%02d/%d", tm.tm_mday,tm.tm_mon+1,tm.tm_year+1900);
-    } 
-
-    if( /*-h*/){
+        
+        
+    }else if(ntokens == 2 && !strcmp(tokens[1], "-h")){
         //imprime la hora en formato hh:mm:ss
         printf("%02d:%02d:%02d\n",tm.tm_hour, tm.tm_min, tm.tm_sec);
     }
+    
     return 0;
 }
 
@@ -87,7 +89,15 @@ int infosis(char *tokens[], int ntokens){
     printf( "version name : %s\n", sysinfo.version );
     return EXIT_SUCCESS;
 }
-int fin(char *tokens[], int ntokens) {
+int pid(char *tokens[], int ntokens){
+    if(ntokens == 1){
+        printf("%d\n",getpid());
+    }else if(ntokens == 2 && !strcmp(tokens[1], "-p")){
+        printf("%d\n",getppid());
+    }
+    return 0;
+}
+int quit(char *tokens[], int ntokens) { 
     return 1;
 }
 
@@ -102,7 +112,9 @@ struct cmd cmds[] = {
     {"carpeta", carpeta},
     {"fecha", fecha},
     {"infosis", infosis},
-    {"fin", fin},
+    {"fin", quit},
+    {"salir",quit},
+    {"bye",quit},
     {NULL, NULL}
 };
 
