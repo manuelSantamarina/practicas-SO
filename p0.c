@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <readline/readline.h>
+#include <sys/utsname.h>
 
 //Autores
 #define AUTOR_1_N "Manuel Santamariña Ruiz de León"
@@ -45,7 +46,7 @@ int autores(char *tokens[], int ntokens) {
 
 int carpeta(char *tokens[], int ntokens){
     //sacamos argumento de los tokens
-    
+    char cwd[] ;
     if(ntokens == 2 && strcmp(tokens[1],"-l")){
     chdir(tokens[1]);
     }else{
