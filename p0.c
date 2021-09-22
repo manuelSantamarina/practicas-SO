@@ -65,20 +65,21 @@ int fecha(char *tokens[], int ntokens){
      time_t t = time(NULL);
     struct tm tm = *localtime(&t);
 
-    printf("ntokens: %d tokens[1]: %s\n\n",ntokens,tokens[1]);
-    if(ntokens== 2 && !strcmp(tokens[1],"-d")){
+    if(ntokens == 2 && strcmp(tokens[1],"-d")){
         //imprime la fecha en formato DD/MM/AAAA
-        printf("%02d/%02d/%d", tm.tm_mday,tm.tm_mon+1,tm.tm_year+1900);
+        printf("%02d/%02d/%d\n", tm.tm_mday,tm.tm_mon+1,tm.tm_year+1900);
         
         
-    }else if(ntokens == 2 && !strcmp(tokens[1], "-h")){
+    }else if(ntokens == 2 && strcmp(tokens[1], "-h")){
         //imprime la hora en formato hh:mm:ss
         printf("%02d:%02d:%02d\n",tm.tm_hour, tm.tm_min, tm.tm_sec);
+    }else{
+    	printf("%02d/%02d/%d\n", tm.tm_mday,tm.tm_mon+1,tm.tm_year+1900);
+    	printf("%02d:%02d:%02d\n",tm.tm_hour, tm.tm_min, tm.tm_sec);
     }
     
     return 0;
 }
-
 int infosis(char *tokens[], int ntokens){
      struct utsname sysinfo;
 
@@ -112,11 +113,11 @@ struct cmd {
 
 struct cmd cmds[] = {
     //help format: "Usage: <command usage>\n<cmd-description>\n\nOptions:\n<option>\t<option-text>\n\n"
-    {"autores", autores, "Usage: autores [-l|-n]\nPrints the names and logins of the program authors.\n\nOptions:\n-l\tPrint only the logins\n-n\tPrint only the names\n\n"},
-    {"pid", pid,"Usage: pid [-p]\nPrints the pid of the process executing the shell.\n\nOptions:\n-p\tPrints the pid of the shell's parent process\n\n"},
-    {"carpeta", carpeta,"Usage: carpeta [direct]\nChanges the current working directory of the shell to \"direct\" (using the \"chdir\" system call). When invoked without arguments it prints the current working directory (using the \"getcwd\" system call).\n\n"},
-    {"fecha", fecha,"Usage: fecha [-d|-h]\nWithout arguments it prints both the current date and the current time.\n\nOptions:\n-d\tPrint the current date in the format DD/MM/YYYY.\n-h\tPrint the current time in the format hh:mm:ss\n\n"},
-    {"infosis", infosis,"Usage: infosis\nPrints information on the machine running the shell (as obtained via the \"uname\" system call/library function)\n\n"},
+    {"autores", autores, "Usage: autores [-l|-n]\nPrints the names and logins of the program authors.\n\nOptions:\n-l\tPrint only the logins\n-n\tPrint only the names"},
+    {"pid", pid,"Usage: pid [-p]\nPrints the pid of the process executing the shell.\n\nOptions:\n-p\tPrints the pid of the shell's parent process"},
+    {"carpeta", carpeta,"Usage: carpeta [direct]\nChanges the current working directory of the shell to \"direct\" (using the \"chdir\" system call). When invoked without arguments it prints the current working directory (using the \"getcwd\" system call)."},
+    {"fecha", fecha,"Usage: fecha [-d|-h]\nWithout arguments it prints both the current date and the current time.\n\nOptions:\n-d\tPrint the current date in the format DD/MM/YYYY.\n-h\tPrint the current time in the format hh:mm:ss"},
+    {"infosis", infosis,"Usage: infosis\nPrints information on the machine running the shell (as obtained via the \"uname\" system call/library function)."},
     {"fin", quit,"Usage: fin\nEnds the shell"},
     {"salir",quit,"Usage: salir\nEnds the shell"},
     {"bye",quit,"Usage: bye\nEnds the shell"},
@@ -128,7 +129,7 @@ int ayuda(char *tokens[], int ntokens){
     int i = 0;
     while(cmds[i].cmd_name != NULL){
         if(strcmp(tokens[1],cmds[i].cmd_name) == 0){
-            printf("%s",cmds[i].help_text);
+            printf("%s\n\n",cmds[i].help_text);
             
             return 0;
             
