@@ -15,6 +15,9 @@
 
 #define MAX_LINE 1024
 #define MAX_TOKENS 100
+//prototypes:
+
+int ayuda(char *tokens[], int ntokens);
 
 int parseString(char * cadena, char * trozos[]) {
     int i=1;
@@ -104,19 +107,37 @@ int quit(char *tokens[], int ntokens) {
 struct cmd {
     char *cmd_name;
     int (*cmd_fun)(char *tokens[], int ntokens);
+    char *help_text;
 };
 
 struct cmd cmds[] = {
-    {"autores", autores},
-    {"pid", pid},
-    {"carpeta", carpeta},
-    {"fecha", fecha},
-    {"infosis", infosis},
-    {"fin", quit},
-    {"salir",quit},
-    {"bye",quit},
+    //help format: "Usage: <command usage>\n<cmd-description>\n\nOptions:\n<option>\t<option-text>\n\n"
+    {"autores", autores, "Usage: autores [-l|-n]\nPrints the names and logins of the program authors.\n\nOptions:\n-l\tPrint only the logins\n-n\tPrint only the names\n\n"},
+    {"pid", pid,"Usage: pid [-p]\nPrints the pid of the process executing the shell.\n\nOptions:\n-p\tPrints the pid of the shell's parent process\n\n"},
+    {"carpeta", carpeta,"Usage: carpeta [direct]\nChanges the current working directory of the shell to \"direct\" (using the \"chdir\" system call). When invoked without arguments it prints the current working directory (using the \"getcwd\" system call).\n\n"},
+    {"fecha", fecha,"Usage: fecha [-d|-h]\nWithout arguments it prints both the current date and the current time.\n\nOptions:\n-d\tPrint the current date in the format DD/MM/YYYY.\n-h\tPrint the current time in the format hh:mm:ss\n\n"},
+    {"infosis", infosis,"Usage: infosis\nPrints information on the machine running the shell (as obtained via the \"uname\" system call/library function)\n\n"},
+    {"fin", quit,"Usage: fin\nEnds the shell"},
+    {"salir",quit,"Usage: salir\nEnds the shell"},
+    {"bye",quit,"Usage: bye\nEnds the shell"},
+    {"ayuda", ayuda,"Usage: ayuda [cmd]\n \"ayuda\" displays a list of available commands. \"ayuda cmd\" gives a brief help on the usage of command \"cmd\""},
     {NULL, NULL}
 };
+
+int ayuda(char *tokens[], int ntokens){
+    int i = 0;
+    while(cmds[i].cmd_name != NULL){
+        if(strcmp(tokens[1],cmds[i].cmd_name) == 0){
+            printf("%s",cmds[i].help_text);
+            
+            return 0;
+            
+        }
+        i++;
+    }
+    printf("No help found for command %s",tokens[0]);
+    return 0;
+}
 
 int processCmd(char *tokens[], int ntokens) {
     int i;

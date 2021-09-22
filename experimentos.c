@@ -4,10 +4,9 @@
 #include <time.h>
 #include <sys/utsname.h>
 int infosis();
-
+void testCharArray();
 void test(){
-    
-    infosis();
+    testCharArray();
 }
 
 int infosis(){
