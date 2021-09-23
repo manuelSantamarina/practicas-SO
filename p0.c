@@ -6,6 +6,7 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 
+#include "dynamic_list.h"
 //Autores
 #define AUTOR_1_N "Manuel Santamariña Ruiz de León"
 #define AUTOR_1_L "manuel.santamarina"
@@ -18,6 +19,7 @@
 //prototypes:
 
 int ayuda(char *tokens[], int ntokens);
+int hist(tList L,char *tokens[],int ntokens);
 
 int parseString(char * cadena, char * trozos[]) {
     int i=1;
@@ -121,7 +123,8 @@ struct cmd cmds[] = {
     {"fin", quit,"Usage: fin\nEnds the shell"},
     {"salir",quit,"Usage: salir\nEnds the shell"},
     {"bye",quit,"Usage: bye\nEnds the shell"},
-    {"ayuda", ayuda,"Usage: ayuda [cmd]\n \"ayuda\" displays a list of available commands. \"ayuda cmd\" gives a brief help on the usage of command \"cmd\""},
+    {"ayuda", ayuda,"Usage: ayuda [cmd]\n\"ayuda\" displays a list of available commands. \"ayuda cmd\" gives a brief help on the usage of command \"cmd\""},
+    {"hist", hist, "Usage: hist [-c | N]\nShows/clears the \"historic\" of commands executed by this shell. In order to do this, a list to store all the commands input to the shell must be implemented.\n\nOptions:\n-c\t Clear the historic\n-N\tPrints the first N commands"},
     {NULL, NULL}
 };
 
@@ -139,7 +142,37 @@ int ayuda(char *tokens[], int ntokens){
     printf("No help found for command %s",tokens[0]);
     return 0;
 }
+int hist(tList L,char *tokens[],int ntokens){
+    if(ntokens==1){
+        if(!isEmptyList(L)){
+            tPosL c = first(L);
+            while (c!=last(L)){   
+                printf("%c\n",getItem(c,L));
 
+                c=next(c,L);
+            }
+        }else{
+        printf("void\n");
+        }
+    }else if( ntokens == 2 && strcmp(tokens[1],"-c")){
+        if(!isEmptyList(L)){
+        tPosL c = first(L);
+        tPosL c2;
+        while (c!=last(L)){   
+            c2 = next(c,L);
+            deleteAtPosition(c,&L);
+            c = c2;
+        }
+    }else if( ntokens == 2 && strcmp(tokens[1],"-N")){
+        if(!isEmptyList(L)){
+            tPosL c = first(L);
+            printf("%c\n",getItem(c,L));
+        }else{
+            printf("void\n");
+        }
+    }
+}
+}
 int processCmd(char *tokens[], int ntokens) {
     int i;
     for(i=0; cmds[i].cmd_name != NULL; i++) {
@@ -151,7 +184,7 @@ int processCmd(char *tokens[], int ntokens) {
     return 0;
 }
 
-int main() {
+int main(){
     char *line;
     char *tokens[MAX_TOKENS];
     int ntokens;
@@ -163,4 +196,5 @@ int main() {
         end = processCmd(tokens, ntokens);
         free(line);
     }
+    return 0;
 }
