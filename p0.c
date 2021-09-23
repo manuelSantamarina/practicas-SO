@@ -109,7 +109,8 @@ int quit(char *tokens[], int ntokens) {
 
 struct cmd {
     char *cmd_name;
-    int (*cmd_fun)(char *tokens[], int ntokens);
+    //int (*cmd_fun)(char *tokens[], int ntokens);
+    int (*cmd_fun)();
     char *help_text;
 };
 
@@ -139,7 +140,7 @@ int ayuda(char *tokens[], int ntokens){
         }
         i++;
     }
-    printf("No help found for command %s",tokens[0]);
+    printf("No help found for command %s",tokens[0]\n);
     return 0;
 }
 int hist(tList L,char *tokens[],int ntokens){
