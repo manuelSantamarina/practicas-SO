@@ -18,8 +18,10 @@
 #define MAX_TOKENS 100
 //prototypes:
 
+tList L;
+
 int ayuda(char *tokens[], int ntokens);
-int hist(tList L,char *tokens[],int ntokens);
+int hist(char *tokens[],int ntokens);
 
 int parseString(char * cadena, char * trozos[]) {
     int i=1;
@@ -153,11 +155,9 @@ int ayuda(char *tokens[], int ntokens){
     }
     return 0;
 }
-int hist(tList L,char *tokens[],int ntokens){
+int hist(char *tokens[],int ntokens){
     
     if(ntokens==1){
-
-        printf("aquí\n");
         if(!isEmptyList(L)){
             tPosL c = first(L);
             while (c!=last(L)){   
@@ -191,8 +191,9 @@ int hist(tList L,char *tokens[],int ntokens){
 int processCmd(char *tokens[], int ntokens) {
     int i;
     for(i=0; cmds[i].cmd_name != NULL; i++) {
-        if(strcmp(tokens[0], cmds[i].cmd_name) ==0)
+        if(strcmp(tokens[0], cmds[i].cmd_name) ==0){
             return cmds[i].cmd_fun(tokens, ntokens);
+        }
     }   
     printf("Comando no reconocido\n");
     return 0;
@@ -203,7 +204,6 @@ int main(){
     char *tokens[MAX_TOKENS];
     int ntokens;
     int end = 0;
-
 
     while(!end) {
         line = readline("> ");
