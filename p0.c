@@ -154,9 +154,10 @@ int ayuda(char *tokens[], int ntokens){
     return 0;
 }
 int hist(tList L,char *tokens[],int ntokens){
-    printf("aquí");
-    printf("tPosL: %s tokens[0]: %s, tokens[1]: %s ntokens: %d","",tokens[0],tokens[1],ntokens);
+    
     if(ntokens==1){
+
+        printf("aquí\n");
         if(!isEmptyList(L)){
             tPosL c = first(L);
             while (c!=last(L)){   
