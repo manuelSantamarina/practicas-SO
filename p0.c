@@ -182,7 +182,7 @@ int hist(char *tokens[],int ntokens){
             tPosL c = first(L);
             printf("%c\n",getItem(c,L));
         }else{
-            printf("void\n");
+            printf("List is currently empty\n");
         }
         }
     }
