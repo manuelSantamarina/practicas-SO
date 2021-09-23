@@ -6,7 +6,7 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 
-#include "dynamic_list.h"
+#include "dynamic_list.c"
 //Autores
 #define AUTOR_1_N "Manuel Santamariña Ruiz de León"
 #define AUTOR_1_L "manuel.santamarina"
@@ -156,30 +156,30 @@ int hist(tList L,char *tokens[],int ntokens){
         }
     }else if( ntokens == 2 && strcmp(tokens[1],"-c")){
         if(!isEmptyList(L)){
-        tPosL c = first(L);
-        tPosL c2;
-        while (c!=last(L)){   
-            c2 = next(c,L);
-            deleteAtPosition(c,&L);
-            c = c2;
-        }
-    }else if( ntokens == 2 && strcmp(tokens[1],"-N")){
+            tPosL c = first(L);
+            tPosL c2;
+            while (c!=last(L)){   
+                c2 = next(c,L);
+                deleteAtPosition(c,&L);
+                c = c2;
+            }
+        }else if( ntokens == 2 && strcmp(tokens[1],"-N")){
         if(!isEmptyList(L)){
             tPosL c = first(L);
             printf("%c\n",getItem(c,L));
         }else{
             printf("void\n");
         }
+        }
     }
-}
+    return 0;
 }
 int processCmd(char *tokens[], int ntokens) {
     int i;
     for(i=0; cmds[i].cmd_name != NULL; i++) {
         if(strcmp(tokens[0], cmds[i].cmd_name) ==0)
             return cmds[i].cmd_fun(tokens, ntokens);
-    }
-
+    }   
     printf("Comando no reconocido\n");
     return 0;
 }
