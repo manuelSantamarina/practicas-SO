@@ -132,18 +132,30 @@ struct cmd cmds[] = {
 int ayuda(char *tokens[], int ntokens){
     int i = 0;
     while(cmds[i].cmd_name != NULL){
-        if(strcmp(tokens[1],cmds[i].cmd_name) == 0){
-            printf("%s\n\n",cmds[i].help_text);
+        if(tokens[1] != NULL){
+            if(strcmp(tokens[1],cmds[i].cmd_name) == 0){
+
+                if(cmds[i].help_text != NULL){
+                printf("%s\n\n",cmds[i].help_text);
+                }else{
+                    printf("No help found for command %s\n\n",tokens[0]);
+                }
+                return 0;
             
-            return 0;
-            
+            }
         }
         i++;
     }
-    printf("No help found for command %s",tokens[0]\n);
+    if(tokens[1] != NULL){
+    printf("No help found for input %s\n\n",tokens[1]);
+    }else if(ntokens == 1){
+        printf("Usage: ayuda [cmd]\n\"ayuda\" displays a list of available commands. \"ayuda cmd\" gives a brief help on the usage of command \"cmd\"\n\n");
+    }
     return 0;
 }
 int hist(tList L,char *tokens[],int ntokens){
+    printf("aquí");
+    printf("tPosL: %s tokens[0]: %s, tokens[1]: %s ntokens: %d","",tokens[0],tokens[1],ntokens);
     if(ntokens==1){
         if(!isEmptyList(L)){
             tPosL c = first(L);
@@ -190,6 +202,7 @@ int main(){
     char *tokens[MAX_TOKENS];
     int ntokens;
     int end = 0;
+
 
     while(!end) {
         line = readline("> ");
