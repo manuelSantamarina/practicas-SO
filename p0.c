@@ -166,7 +166,7 @@ int hist(char *tokens[],int ntokens){
                 c=next(c,L);
             }
         }else{
-        printf("void\n");
+        printf("List is currently empty. \n");
         }
     }else if( ntokens == 2 && strcmp(tokens[1],"-c")){
         if(!isEmptyList(L)){
