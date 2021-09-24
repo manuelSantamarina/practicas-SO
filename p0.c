@@ -18,10 +18,8 @@
 #define MAX_TOKENS 100
 //prototypes:
 
-tList L;
-
 int ayuda(char *tokens[], int ntokens);
-int hist(char *tokens[],int ntokens);
+int hist(char *tokens[],int ntokens, tList *L);
 
 int parseString(char * cadena, char * trozos[]) {
     int i=1;
@@ -155,7 +153,7 @@ int ayuda(char *tokens[], int ntokens){
     }
     return 0;
 }
-int hist(char *tokens[],int ntokens){
+int hist(char *tokens[],int ntokens, tList *L){
     
     if(ntokens==1){
         if(!isEmptyList(L)){
@@ -168,7 +166,7 @@ int hist(char *tokens[],int ntokens){
         }else{
         printf("List is currently empty. \n");
         }
-    }else if( ntokens == 2 && strcmp(tokens[1],"-c")){
+    }else if( ntokens == 2 && strcmp(tokens[1],"-c") == 0){
         if(!isEmptyList(L)){
             tPosL c = first(L);
             tPosL c2;
@@ -188,10 +186,16 @@ int hist(char *tokens[],int ntokens){
     }
     return 0;
 }
-int processCmd(char *tokens[], int ntokens) {
+//si quiero insertar al final inserto en 0
+int processCmd(char *tokens[], int ntokens, tList *L) {
     int i;
+    tItemL item; 
+    strcpy(item.command,tokens[0]);
+    strcpy(item.parameters,tokens[1]);
+    
     for(i=0; cmds[i].cmd_name != NULL; i++) {
         if(strcmp(tokens[0], cmds[i].cmd_name) ==0){
+            insertItem(item,0,L);
             return cmds[i].cmd_fun(tokens, ntokens);
         }
     }   
@@ -204,11 +208,13 @@ int main(){
     char *tokens[MAX_TOKENS];
     int ntokens;
     int end = 0;
+    tList L;
+    createEmptyList(&L);
 
     while(!end) {
         line = readline("> ");
         ntokens = parseString(line, tokens);
-        end = processCmd(tokens, ntokens);
+        end = processCmd(tokens, ntokens, L);
         free(line);
     }
     return 0;
