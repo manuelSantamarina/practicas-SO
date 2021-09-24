@@ -191,7 +191,10 @@ int processCmd(char *tokens[], int ntokens, tList *L) {
     int i;
     tItemL item; 
     strcpy(item.command,tokens[0]);
-    strcpy(item.parameters,tokens[1]);
+    if(tokens[1] != NULL){
+        strcpy(item.parameters,tokens[1]);
+    }
+    
     
     for(i=0; cmds[i].cmd_name != NULL; i++) {
         if(strcmp(tokens[0], cmds[i].cmd_name) ==0){
@@ -210,9 +213,9 @@ int main(){
     int end = 0;
     tList L;
     createEmptyList(&L);
-
     while(!end) {
         line = readline("> ");
+        printf("%s\n",line);
         ntokens = parseString(line, tokens);
         end = processCmd(tokens, ntokens, L);
         free(line);
