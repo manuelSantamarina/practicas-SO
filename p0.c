@@ -25,6 +25,11 @@ void debug(char string[]){
     printf("%s\n",string);
     fflush(stdout);
 }
+void imprimirPrompt(){
+    char name[32];
+    gethostname(name,32);
+    printf("%s@%s:",getlogin(),name);
+}
 int parseString(char * cadena, char * trozos[]) {
     int i=1;
     if ((trozos[0]=strtok(cadena," \n\t"))==NULL)
@@ -283,7 +288,7 @@ int main(){
     createEmptyList(&L);
 
     while(!end) {
-        printf(">");
+        imprimirPrompt();
         fgets(line,MAX_LINE,stdin);
         ntokens = parseString(line, tokens);
         end = processCmd(tokens, ntokens, &L);
