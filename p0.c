@@ -27,8 +27,11 @@ void debug(char string[]){
 }
 void imprimirPrompt(){
     char name[32];
+    char cwd[100] = "current working directory";
+    getcwd(cwd, 100);
+
     gethostname(name,32);
-    printf("%s@%s:",getlogin(),name);
+    printf("%s@%s:%s$",getlogin(),name,cwd);
 }
 int parseString(char * cadena, char * trozos[]) {
     int i=1;
