@@ -146,7 +146,7 @@ struct cmd cmds[] = {
     {"bye",quit,"Usage: bye\nEnds the shell"},
     {"ayuda", ayuda,"Usage: ayuda [cmd]\n\"ayuda\" displays a list of available commands. \"ayuda cmd\" gives a brief help on the usage of command \"cmd\""},
     {"hist", hist, "Usage: hist [-c | N]\nShows/clears the \"historic\" of commands executed by this shell. In order to do this, a list to store all the commands input to the shell must be implemented.\n\nOptions:\n-c\t Clear the historic\n-N\tPrints the first N commands"},
-    {"comando", comando, "Usage: comando N\n Repeats command number N (from historic list).\n"},
+    //{"comando", comando, "Usage: comando N\n Repeats command number N (from historic list).\n"},
     {NULL, NULL}
 };
 
