@@ -28,15 +28,6 @@ tPosL first(tList L){
     return L;
 }
 
-tPosL previous(tPosL p, tList L){
-    tPosL q;
-    if((p=NULL))
-        q=NULL;
-    else
-        for(q=L;(q->next=!p);q=q->next);
-    return q;
-}
-
 tPosL last(tList L){
     tPosL p;
     for(p=L;p->next!=NULL;p=p->next);
