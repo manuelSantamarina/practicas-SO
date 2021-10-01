@@ -7,6 +7,8 @@
 
 #include "dynamic_list.c"
 //Autores
+/*  Manuel Santamariña Ruiz de León (manuel.santamarina)
+    Mateo Rivela Santos (mateo.rivela)*/
 #define AUTOR_1_N "Manuel Santamariña Ruiz de León"
 #define AUTOR_1_L "manuel.santamarina"
 #define AUTOR_2_N "Mateo Rivela Santos"
@@ -31,7 +33,7 @@ void imprimirPrompt(){
     getcwd(cwd, 100);
 
     gethostname(name,32);
-    printf("%s@%s:%s$",getlogin(),name,cwd);
+    printf("%s@%s:%s$ ",getlogin(),name,cwd);
 }
 int parseString(char * cadena, char * trozos[]) {
     int i=1;
@@ -261,7 +263,7 @@ int comando(char *tokens[],int ntokens,tList *L){
     tPosL p;
     char* comd;
     p=first(*L);
-    
+    //El error probablemente esté aquí
     for(int i = 0;i!= atoi(tokens[1]);i++){
         p=next(p,*L);
     }

@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-typedef struct tNode * tPosL;
+typedef struct tNode* tPosL;
 typedef char tCommand[256];
 typedef char tParameters[10];
 typedef struct tItemL{
@@ -22,7 +22,6 @@ void updateItem(tItemL, tPosL, tList*);
 tPosL first(tList);
 tPosL last(tList);
 tPosL next(tPosL, tList);
-tPosL previous(tPosL, tList);
 void deleteList(tList*);
 void deleteAtPosition(tPosL, tList*);
 bool insertItem(tItemL,tPosL, tList*);
