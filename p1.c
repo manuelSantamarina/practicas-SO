@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <dirent.h>
-
 #include "dynamic_list.c"
 //Autores
 /*  Manuel Santamariña Ruiz de León (manuel.santamarina)
@@ -165,21 +164,44 @@ struct cmd cmds[] = {
     //{"comando", comando, "Usage: comando N\n Repeats command number N (from historic list).\n"},
     {NULL, NULL}
 };
+char* getLastSegmentFromPath(char path[]){
+    char* token;
+    int i = 0; 
+    token = strtok(path,"/");
+    char* previousFilename;
+    while(token != NULL){
+        previousFilename = token;
+        token = strtok(NULL,"/");
+    }
+    return previousFilename;
+}
+
 int listfich(char *tokens[], int ntokens){
     //gives info on files in one line per file
-    char filename[] = "./p1.c";
+    char path[] = "abc/def/ghi/jkl/p1.c";
+    char* rest = path;
+    char* filename;
 
     struct stat filestat; 
+    stat(path, &filestat);
     
-    stat(filename, &filestat);
+    filename = getLastSegmentFromPath(path);
+    printf("%s",filename);
     
-    printf("%ld",filestat.st_size);
+
+
+    //printf("%s, %s %s",filename[0],filename[1],filename[2]);
+
+    
+    //Short list
+    //printf("%ld %s \n",filestat.st_size, filename);
     
     if(ntokens == 0){    
         printCurrentDirectory();
     }
     return 0;
 }
+
 int ayuda(char *tokens[], int ntokens){
     int i = 0;
     while(cmds[i].cmd_name != NULL){
