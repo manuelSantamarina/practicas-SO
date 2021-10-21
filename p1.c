@@ -186,15 +186,10 @@ int listfich(char *tokens[], int ntokens){
     stat(path, &filestat);
     
     filename = getLastSegmentFromPath(path);
-    printf("%s",filename);
-    
-
-
-    //printf("%s, %s %s",filename[0],filename[1],filename[2]);
 
     
     //Short list
-    //printf("%ld %s \n",filestat.st_size, filename);
+    printf("%ld %s \n",filestat.st_size, filename);
     
     if(ntokens == 0){    
         printCurrentDirectory();
