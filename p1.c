@@ -178,7 +178,7 @@ char* getLastSegmentFromPath(char path[]){
 
 int listfich(char *tokens[], int ntokens){
     //gives info on files in one line per file
-    char path[] = "abc/def/ghi/jkl/p1.c";
+    char path[] = "../p1.c";
     char* rest = path;
     char* filename;
 
@@ -187,7 +187,9 @@ int listfich(char *tokens[], int ntokens){
     
     filename = getLastSegmentFromPath(path);
 
-    
+    if(access(path, F_OK )){
+        //file exists
+    };
     //Short list
     printf("%ld %s \n",filestat.st_size, filename);
     
