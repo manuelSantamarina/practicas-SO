@@ -29,7 +29,7 @@ int borrar(char *tokens[], int ntokens);
 int borrarrec(char *tokens[], int ntokens);
 int listfich(char *tokens[], int ntokens);
 int listdir(char *tokens[], int ntokens);
-
+bool escarpeta(char *name);
 
 void debug(char string[]){
     printf("%s\n",string);
@@ -76,16 +76,16 @@ int autores(char *tokens[], int ntokens) {
         printf("\n");
     return 0;
 }   
-
-int carpeta(char *tokens[], int ntokens){
-    //sacamos argumento de los tokens
+void printCurrentDirectory(){
     char cwd[100] = "current working directory";
     getcwd(cwd, 100);
-
+    printf("%s\n",cwd);
+}
+int carpeta(char *tokens[], int ntokens){
     if(ntokens==2){
         chdir(tokens[1]);
     }else{
-        printf("%s\n", cwd);
+        printCurrentDirectory();
     }
     return 0;
 }
@@ -160,12 +160,26 @@ struct cmd cmds[] = {
     {"crear",crear,"Usage: crear [-f] name\nC Creates a file or directory in the file system. name is the name of the file (or directory) to be created. If no option is specified, a directory will be created. If name is not given, the name of the current working directory will be printed.\n\nOptions:\n-f\tIf specified, an empty directory is to be created."},
     {"borrar",borrar,"Usage: borrar name1 name2 ...\nDeletes files and/or empty directories. If no name is given, the current working directory will be printed."},
     {"borrarrec",borrarrec,"Usage: borrarrec name1 name2 ...\nDeletes files and/or non empty directories with all of their content. If no name is given, the current working directory will be printed"},
-    {"listfich",listfich,"Usage: listfich [-long] [-link] [-acc] name1 name2 name3 ...\nGives info on files (or directories, or devices ... ) name1, name2 ... in one per file. If no options are given, it prints the size and the name of each file. If no name is given, the name current working directory will be printed (as with the carpeta command)\n\nOptions:\n-long\tLong listing.it will print out the date of last modification (in format YYYY/MM/DD-HH:mm), number of links, owner, group, mode (drwx format), size and name of the file. If any of the names is a directory, information on the directory file itsself will be printed. The format to be used is: date number of links (inode number) owner group mode size name\n\n-link\t-link is only meaningful for long listings: if the file is a symbolic link the name of the file it points to is also printed. Format: date number of links (inode number) owner group mode size name->file the link points to.\n\n-acc\tLast access time will be used instead of last modification time."},
+    {"listfich",listfich,"Usage: listfich [-long] [-link] [-acc] name1 name2 name3 ...\nGives info on files (or directories, or devices ... ) name1, name2 ... in one line per file. If no options are given, it prints the size and the name of each file. If no name is given, the name current working directory will be printed (as with the carpeta command)\n\nOptions:\n-long\tLong listing.it will print out the date of last modification (in format YYYY/MM/DD-HH:mm), number of links, owner, group, mode (drwx format), size and name of the file. If any of the names is a directory, information on the directory file itsself will be printed. The format to be used is: date number of links (inode number) owner group mode size name\n\n-link\t-link is only meaningful for long listings: if the file is a symbolic link the name of the file it points to is also printed. Format: date number of links (inode number) owner group mode size name->file the link points to.\n\n-acc\tLast access time will be used instead of last modification time."},
     {"listdir",listdir,"Usage: listdir [-reca] [-recb] [-hid] [-long] [-link] [-acc] name1 name2 ...\nLists the contents of directories with names name1, name2 ...  If any of name1, name2 . . . is not a directory, info on it will be printed EXACTLY as with command listfich. If no name is given, the name of the current working directory will be printed (as with the carpeta command).\n\nOptions:\n-long\tLong listing.it will print out the date of last modification (in format YYYY/MM/DD-HH:mm), number of links, owner, group, mode (drwx format), size and name of the file. If any of the names is a directory, information on the directory file itsself will be printed. The format to be used is: date number of links (inode number) owner group mode size name\n\n-link\t-link is only meaningful for long listings: if the file is a symbolic link the name of the file it points to is also printed. Format: date number of links (inode number) owner group mode size name->file the link points to.\n\n-acc\tLast access time will be used instead of last modification time.\n-long\tLong listing.it will print out the date of last modification (in format YYYY/MM/DD-HH:mm), number of links, owner, group, mode (drwx format), size and name of the file. If any of the names is a directory, information on the directory file itsself will be printed. The format to be used is: date number of links (inode number) owner group mode size name\n\n-link\t-link is only meaningful for long listings: if the file is a symbolic link the name of the file it points to is also printed. Format: date number of links (inode number) owner group mode size name->file the link points to.\n\n-acc\tLast access time will be used instead of last modification time.\n-reca\tWhen listing a directory's contents, subdirectories will be listed recursively BEFORE all the files in the directory. (if the -hid option is also given, hidden subdirectories will also get listed, except . and .. to avoid infinite recursion"},
     //{"comando", comando, "Usage: comando N\n Repeats command number N (from historic list).\n"},
     {NULL, NULL}
 };
+int listfich(char *tokens[], int ntokens){
+    //gives info on files in one line per file
+    char filename[] = "./p1.c";
 
+    struct stat filestat; 
+    
+    stat(filename, &filestat);
+    
+    printf("%ld",filestat.st_size);
+    
+    if(ntokens == 0){    
+        printCurrentDirectory();
+    }
+    return 0;
+}
 int ayuda(char *tokens[], int ntokens){
     int i = 0;
     while(cmds[i].cmd_name != NULL){
@@ -198,7 +212,6 @@ int hist(char *tokens[],int ntokens,tList *L){
 
             while (c!=last(*L)){
                 printf("%i > %s %s\n",i,getItem(c,*L).command,getItem(c,*L).parameters);
-
                 c=next(c,*L);
                 i++;
             }
@@ -245,43 +258,170 @@ int crear(char *tokens[], int ntokens){
 }
 
 int borrar(char *tokens[], int ntokens){
-
+    if(ntokens == 1){
+        printCurrentDirectory();
+        return 0;
+    }
     for(int i=1;i<ntokens;i++){
         remove(tokens[i]);
     }
     return 0;
 }
 
-void borrec(char *name[]){
-    char c[100];
-    DIR *dir;
-    struct dirent *ent;
-    dir=opendir(*name);
-    if(dir==NULL){
-        remove(*name);
-    } else{
-        ent = readdir (dir);
-        strcpy(c,ent->d_name);
-        borrec((char **) c);
-        closedir(dir);
-        remove(*name);
+void borrec(char *name){
+
+
+    if(escarpeta(name)){
+
+        DIR *d;
+
+        struct dirent *dir;
+        d = opendir(name);
+        if (d) {
+            while ((dir = readdir(d)) != NULL) {
+                if(strcmp(dir->d_name,".")!=0 && strcmp(dir->d_name,"..")!=0){
+                    chdir(name);
+                    if(escarpeta(dir->d_name)){
+
+                        borrec(dir->d_name);
+                        rmdir(dir->d_name);
+                    } else{
+                        remove(dir->d_name);
+                    }
+                    chdir("..");
+                }
+            }
+            closedir(d);
+            rmdir(name);
+        }
     }
 }
 
 int borrarrec(char *tokens[], int ntokens){
 
-    DIR *dir;
-    struct dirent *ent;
-
     //1ºQue es lo que tiene q borrar -> carpeta entonces entre archivo enotnces borra
     //2ºSi es carpeta hace el primer paso con cada uno de los archivos y al terminar borra las carpetas en las que entro
-
+    if(ntokens == 1){
+        printCurrentDirectory();
+        return 0;
+    }
     for(int i=1;i<ntokens;i++){
-        borrec(&tokens[i]);
+        borrec(tokens[i]);
     }
     return 0;
 }
 
+
+bool escarpeta(char *name){
+
+    struct stat st;
+    lstat(name,&st);
+    return S_ISDIR(st.st_mode);
+
+}
+
+void listdirrec(char *name){
+
+    if(escarpeta(name)){
+        DIR *d;
+        char path[100];
+        struct dirent *dir;
+        d = opendir(name);
+        if (d) {
+            while ((dir = readdir(d)) != NULL) {
+                if(strcmp(dir->d_name,".")!=0 && strcmp(dir->d_name,"..")!=0){
+
+                    if(escarpeta(dir->d_name)){
+                        printf("%s\t \n", dir->d_name);
+
+                        getcwd(path,100);
+                        strcat(path,"/");
+                        strcat(path,dir->d_name);
+                        listdirrec(path);
+                    } else{
+                        printf("%s\n", dir->d_name);
+                    }
+                }
+            }
+            closedir(d);
+        }
+    }
+}
+
+
+
+int listdir(char *tokens[],int ntokens){
+    if(ntokens==1){
+        carpeta(&tokens[0],1);
+    }else{
+        DIR *d;
+        struct dirent *dir;
+        struct stat st;
+        for(int i=1;i<ntokens;i++){
+            lstat(tokens[i],&st);
+            if(strcmp(tokens[1],"-recb")==0) {
+                if (strcmp(tokens[2], "-hid") == 0) {
+                    printf("imprimir contenido de fichero (BEFORE) y sus subficheros incluso los de hid\n");
+                } else {
+                    if(ntokens>i+1){
+                        listdirrec(tokens[i+1]);
+                    }
+
+                }
+            }else if(strcmp(tokens[1],"-reca")==0){
+                if(strcmp(tokens[2],"-hid")==0){
+                    printf("imprimir contenido de fichero (AFTER) y sus subficheros incluso los de hid\n");
+                }else{
+                    printf("imprimir contenido de fichero (AFTER) y sus subficheros\n");
+                }
+            } else if(strcmp(tokens[1],"-hid")==0){
+                if(strcmp(tokens[2],"-reca")==0){
+                    printf("imprimir contenido de fichero y sus subficheros incluso los de hid\n");
+                }else{
+                    if(ntokens>i+1){
+                        if(escarpeta(tokens[i+1])){
+                            d = opendir(tokens[i+1]);
+                            if (d) {
+                                while ((dir = readdir(d)) != NULL) {
+                                    printf("%s\n", dir->d_name);
+                                }
+                                closedir(d);
+                            }
+                        }
+                    }
+                }
+
+            }else if (strcmp(tokens[1],"-long")==0){
+                printf("Hacer lo que hace el long en listfich para todos los archivos del directorio dado\n");
+            }else if (strcmp(tokens[1],"-link")==0){
+                printf("Hacer lo que hace el -link en listfich para todos los archivos del directorio dado\n");
+            }else if (strcmp(tokens[1],"-acc")==0){
+                printf("Hacer lo que hace el -acc en listfich para todos los archivos del directorio dado\n");
+            }else{
+                if(escarpeta(tokens[i])){
+                    d = opendir(tokens[i]);
+                    if (d) {
+
+                        while ((dir = readdir(d)) != NULL) {
+
+                            if(dir->d_name[0]!='.'){
+                                printf("%s\n", dir->d_name);
+                            }
+                            i++;
+
+
+                        }
+                        closedir(d);
+                    }
+                } else{
+                    printf("No es carpeta");
+                }
+
+            }
+        }
+    }
+    return 0;
+}
 
 //si quiero insertar al final inserto en 0
 int processCmd(char *tokens[], int ntokens, tList *L) {
