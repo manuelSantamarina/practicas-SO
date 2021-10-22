@@ -169,7 +169,7 @@ struct cmd cmds[] = {
     {"borrarrec",borrarrec,"Usage: borrarrec name1 name2 ...\nDeletes files and/or non empty directories with all of their content. If no name is given, the current working directory will be printed"},
     {"listfich",listfich,"Usage: listfich [-long] [-link] [-acc] name1 name2 name3 ...\nGives info on files (or directories, or devices ... ) name1, name2 ... in one line per file. If no options are given, it prints the size and the name of each file. If no name is given, the name current working directory will be printed (as with the carpeta command)\n\nOptions:\n-long\tLong listing.it will print out the date of last modification (in format YYYY/MM/DD-HH:mm), number of links, owner, group, mode (drwx format), size and name of the file. If any of the names is a directory, information on the directory file itsself will be printed. The format to be used is: date number of links (inode number) owner group mode size name\n\n-link\t-link is only meaningful for long listings: if the file is a symbolic link the name of the file it points to is also printed. Format: date number of links (inode number) owner group mode size name->file the link points to.\n\n-acc\tLast access time will be used instead of last modification time."},
     {"listdir",listdir,"Usage: listdir [-reca] [-recb] [-hid] [-long] [-link] [-acc] name1 name2 ...\nLists the contents of directories with names name1, name2 ...  If any of name1, name2 . . . is not a directory, info on it will be printed EXACTLY as with command listfich. If no name is given, the name of the current working directory will be printed (as with the carpeta command).\n\nOptions:\n-long\tLong listing.it will print out the date of last modification (in format YYYY/MM/DD-HH:mm), number of links, owner, group, mode (drwx format), size and name of the file. If any of the names is a directory, information on the directory file itsself will be printed. The format to be used is: date number of links (inode number) owner group mode size name\n\n-link\t-link is only meaningful for long listings: if the file is a symbolic link the name of the file it points to is also printed. Format: date number of links (inode number) owner group mode size name->file the link points to.\n\n-acc\tLast access time will be used instead of last modification time.\n-long\tLong listing.it will print out the date of last modification (in format YYYY/MM/DD-HH:mm), number of links, owner, group, mode (drwx format), size and name of the file. If any of the names is a directory, information on the directory file itsself will be printed. The format to be used is: date number of links (inode number) owner group mode size name\n\n-link\t-link is only meaningful for long listings: if the file is a symbolic link the name of the file it points to is also printed. Format: date number of links (inode number) owner group mode size name->file the link points to.\n\n-acc\tLast access time will be used instead of last modification time.\n-reca\tWhen listing a directory's contents, subdirectories will be listed recursively BEFORE all the files in the directory. (if the -hid option is also given, hidden subdirectories will also get listed, except . and .. to avoid infinite recursion"},
-    //{"comando", comando, "Usage: comando N\n Repeats command number N (from historic list).\n"},
+    {"comando", comando, "Usage: comando N\n Repeats command number N (from historic list).\n"},
     {NULL, NULL}
 };
 char* getLastSegmentFromPath(char path[]){
@@ -275,6 +275,8 @@ int listfich(char *tokens[], int ntokens){
                     }else{
                         printf("%s %ld %ld %s %s %s %lld %s %s -> %s\n", ctime(&filestat.st_mtime),(long)filestat.st_nlink, (long)filestat.st_ino,ownr->pw_name,group->gr_name,ConvierteModo2(filestat.st_mode),(long long)filestat.st_size, filename, path, symlink_s);
                     }
+                }else{
+                    printf("%lld %s\n",(long long)filestat.st_size, filename);
                 }
             }
                 //it exists! printf("%ld %s \n",filestat.st_size, filename);
@@ -348,17 +350,17 @@ int hist(char *tokens[],int ntokens,tList *L){
         if(!isEmptyList(*L)){
             tPosL c = first(*L);
             tPosL c2;
-        while (c!=last(*L)){
-            c2 = next(c,*L);
-            deleteAtPosition(c,L);
-            c = c2;
-        }
-    }else if(strcmp(tokens[1],"-N")==0){
-        if(!isEmptyList(*L)){
-            tPosL c = first(*L);
-            printf("%s %s\n",getItem(c,*L).command,getItem(c,*L).parameters);
-        }else{
-            printf("void1\n");
+            while (c!=last(*L)){
+                c2 = next(c,*L);
+                deleteAtPosition(c,L);
+                c = c2;
+            }
+        }else if(strcmp(tokens[1],"-N")==0){
+            if(!isEmptyList(*L)){
+                tPosL c = first(*L);
+                printf("%s %s\n",getItem(c,*L).command,getItem(c,*L).parameters);
+            }else{
+                printf("void1\n");
             }
         }
     }
@@ -551,7 +553,6 @@ int listdir(char *tokens[],int ntokens){
 int processCmd(char *tokens[], int ntokens, tList *L) {
     int i;
     tItemL item;
-    
     strcpy(item.command,tokens[0]);
     strcpy(item.parameters,"");
     if(tokens[1]!=NULL&&ntokens==2){
@@ -599,18 +600,20 @@ int comando(char *tokens[],int ntokens,tList *L){
     }
     item=getItem(p,*L);
     comd=item.command;
+    char *par;
+    par = item.parameters;
     if(strcmp(item.parameters,"")!=0){
         strcat(comd," ");
-        strcat(comd,item.parameters);
+        strcat(comd,par);
         n= parseString(comd,tr);
         processCmd( tr, n, L);
 
         return 1;
+    }else{
+        n= parseString(comd,tr);
+        processCmd(tr, n, L);
+        return 1;
     }
-    n= parseString(comd,tr);
-    processCmd(tr, n, L);
-    return 1;
-
 }
 
 int main(){
