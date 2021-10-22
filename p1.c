@@ -446,104 +446,175 @@ bool escarpeta(char *name){
 
 }
 
-void listdirrec(char *name){
-
+void listdirrec1(char *name,bool hid,bool lon,bool acc,bool link){
+    int i=0;
     if(escarpeta(name)){
         DIR *d;
-        char path[100];
         struct dirent *dir;
+        char *carp[100];
+
         d = opendir(name);
+        printf("************%s\n",name);
         if (d) {
             while ((dir = readdir(d)) != NULL) {
-                if(strcmp(dir->d_name,".")!=0 && strcmp(dir->d_name,"..")!=0){
 
-                    if(escarpeta(dir->d_name)){
-                        printf("%s\t \n", dir->d_name);
+                struct stat st;
+                lstat(dir->d_name, &st);
 
-                        getcwd(path,100);
-                        strcat(path,"/");
-                        strcat(path,dir->d_name);
-                        listdirrec(path);
-                    } else{
-                        printf("%s\n", dir->d_name);
+                chdir(name);
+                if(escarpeta(dir->d_name)){
+                    if(hid){
+
+                        carp[i]=dir->d_name;
+                        i++;
+                        printf("\t %6lu  %s \n", st.st_size,dir->d_name);
+                    }else{
+                        if(dir->d_name[0]!='.'){
+
+                            carp[i]=dir->d_name;
+                            i++;
+                            printf("\t %6lu  %s \n", st.st_size,dir->d_name);
+                        }
+                    }
+                } else{
+                    if(hid){
+                        printf("\t %6lu  %s \n", st.st_size,dir->d_name);
+                    }else{
+                        if(dir->d_name[0]!='.'){
+                            printf("\t %6lu  %s \n", st.st_size,dir->d_name);
+                        }
                     }
                 }
             }
+
+
+
+
+            for(int j=0;j<i;j++) {
+                char *nam="";
+
+                if (strcmp(carp[j], "..") != 0 && strcmp(carp[j], ".") != 0) {
+                    nam=carp[j];
+                    listdirrec1(nam, hid, lon, acc, link);
+                }
+
+            }
+            chdir("..");
             closedir(d);
         }
     }
 }
 
 
+void listdirrec2(char *name,bool hid,bool lon,bool acc,bool link){
+    int i=0;
+    if(escarpeta(name)){
+        DIR *d;
+        struct dirent *dir;
+        char *carp[100];
+
+        d = opendir(name);
+        if (d) {
+            while ((dir = readdir(d)) != NULL) {
+
+                struct stat st;
+                lstat(dir->d_name, &st);
+                chdir(name);
+                if(escarpeta(dir->d_name)){
+                    if(hid){
+                        carp[i]=dir->d_name;
+                        i++;
+                    }else{
+                        if(dir->d_name[0]!='.'){
+                            carp[i]=dir->d_name;
+                            i++;
+                        }
+                    }
+                }
+            }
+
+            for(int j=0;j<i;j++) {
+                char *nam="";
+
+                if (strcmp(carp[j], "..") != 0 && strcmp(carp[j], ".") != 0) {
+                    nam=carp[j];
+                    listdirrec1(nam, hid, lon, acc, link);
+                }
+            }
+
+            chdir("..");
+            closedir(d);
+            d = opendir(name);
+            printf("************%s\n",name);
+            while ((dir = readdir(d)) != NULL) {
+
+                struct stat st;
+                lstat(dir->d_name, &st);
+
+                chdir(name);
+                if(escarpeta(dir->d_name)){
+                    if(hid){
+                        printf("\t %6lu  %s \n", st.st_size,dir->d_name);
+                    }else{
+                        if(dir->d_name[0]!='.'){
+                            printf("\t %6lu  %s \n", st.st_size,dir->d_name);
+                        }
+                    }
+                } else{
+                    if(hid){
+                        printf("\t %6lu  %s \n", st.st_size,dir->d_name);
+                    }else{
+                        if(dir->d_name[0]!='.'){
+                            printf("\t %6lu  %s \n", st.st_size,dir->d_name);
+                        }
+                    }
+                }
+            }
+            chdir("..");
+            closedir(d);
+        }
+    }
+}
+
 
 int listdir(char *tokens[],int ntokens){
+
+    bool reca=false,recb=false,hid=false,lon=false,acc=false,link=false;
+    int n=0;
     if(ntokens==1){
         carpeta(&tokens[0],1);
     }else{
-        DIR *d;
-        struct dirent *dir;
-        struct stat st;
         for(int i=1;i<ntokens;i++){
-            lstat(tokens[i],&st);
-            if(strcmp(tokens[1],"-recb")==0) {
-                if (strcmp(tokens[2], "-hid") == 0) {
-                    printf("imprimir contenido de fichero (BEFORE) y sus subficheros incluso los de hid\n");
-                } else {
-                    if(ntokens>i+1){
-                        listdirrec(tokens[i+1]);
-                    }
-
-                }
-            }else if(strcmp(tokens[1],"-reca")==0){
-                if(strcmp(tokens[2],"-hid")==0){
-                    printf("imprimir contenido de fichero (AFTER) y sus subficheros incluso los de hid\n");
-                }else{
-                    printf("imprimir contenido de fichero (AFTER) y sus subficheros\n");
-                }
-            } else if(strcmp(tokens[1],"-hid")==0){
-                if(strcmp(tokens[2],"-reca")==0){
-                    printf("imprimir contenido de fichero y sus subficheros incluso los de hid\n");
-                }else{
-                    if(ntokens>i+1){
-                        if(escarpeta(tokens[i+1])){
-                            d = opendir(tokens[i+1]);
-                            if (d) {
-                                while ((dir = readdir(d)) != NULL) {
-                                    printf("%s\n", dir->d_name);
-                                }
-                                closedir(d);
-                            }
-                        }
-                    }
-                }
-
-            }else if (strcmp(tokens[1],"-long")==0){
-                printf("Hacer lo que hace el long en listfich para todos los archivos del directorio dado\n");
-            }else if (strcmp(tokens[1],"-link")==0){
-                printf("Hacer lo que hace el -link en listfich para todos los archivos del directorio dado\n");
-            }else if (strcmp(tokens[1],"-acc")==0){
-                printf("Hacer lo que hace el -acc en listfich para todos los archivos del directorio dado\n");
-            }else{
-                if(escarpeta(tokens[i])){
-                    d = opendir(tokens[i]);
-                    if (d) {
-
-                        while ((dir = readdir(d)) != NULL) {
-
-                            if(dir->d_name[0]!='.'){
-                                printf("%s\n", dir->d_name);
-                            }
-                            i++;
-
-
-                        }
-                        closedir(d);
-                    }
-                } else{
-                    printf("No es carpeta");
-                }
-
+            if(strcmp(tokens[i],"-reca")==0){
+                reca=true;
+                n++;
+            }else if(strcmp(tokens[i],"-recb")==0){
+                recb=true;
+                n++;
+            }else if(strcmp(tokens[i],"-hid")==0){
+                hid=true;
+                n++;
+            }else if(strcmp(tokens[i],"-long")==0){
+                lon=true;
+                n++;
+            }else if(strcmp(tokens[i],"-acc")==0){
+                acc=true;
+                n++;
+            } else if(strcmp(tokens[i],"-link")==0){
+                link=true;
+                n++;
             }
+        }
+
+        for(int i=n+1;i<ntokens;i++){
+            if(!escarpeta(tokens[i])){
+                perror("carpeta no encontrada");
+            }else if(reca){
+                listdirrec1(tokens[i],hid,lon,acc,link);
+            }else if(recb){
+                listdirrec2(tokens[i],hid,lon,acc,link);
+            }
+
         }
     }
     return 0;
