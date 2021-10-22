@@ -7,6 +7,9 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include "dynamic_list.c"
+
+#include <pwd.h>
+#include <grp.h>
 //Autores
 /*  Manuel Santamariña Ruiz de León (manuel.santamarina)
     Mateo Rivela Santos (mateo.rivela)*/
@@ -14,6 +17,7 @@
 #define AUTOR_1_L "manuel.santamarina"
 #define AUTOR_2_N "Mateo Rivela Santos"
 #define AUTOR_2_L "mateo.rivela"
+
 
 
 #define MAX_LINE 1024
@@ -32,6 +36,10 @@ bool escarpeta(char *name);
 
 void debug(char string[]){
     printf("%s\n",string);
+    fflush(stdout);
+}
+void debug_int(int integer){
+    printf("%d\n",integer);
     fflush(stdout);
 }
 void imprimirPrompt(){
@@ -166,7 +174,6 @@ struct cmd cmds[] = {
 };
 char* getLastSegmentFromPath(char path[]){
     char* token;
-    int i = 0; 
     token = strtok(path,"/");
     char* previousFilename;
     while(token != NULL){
@@ -175,30 +182,87 @@ char* getLastSegmentFromPath(char path[]){
     }
     return previousFilename;
 }
-
-int listfich(char *tokens[], int ntokens){
-    //gives info on files in one line per file
-    char path[] = "../p1.c";
-    char* rest = path;
-    char* filename;
-
-    struct stat filestat; 
-    stat(path, &filestat);
-    
-    filename = getLastSegmentFromPath(path);
-
-    if(access(path, F_OK )){
-        //file exists
-    };
-    //Short list
-    printf("%ld %s \n",filestat.st_size, filename);
-    
-    if(ntokens == 0){    
-        printCurrentDirectory();
+int isOption(char *token){
+    if(token[0] == '-'){
+        return 1;
+    }else{
+        return 0;
     }
-    return 0;
 }
 
+int listfich(char *tokens[], int ntokens){
+    //boolean parameters
+    bool _long = false;
+    bool _link = false; 
+    bool _acc = false; 
+
+    for(int i = 0; i < ntokens; i++){
+            if(!strcmp(tokens[i],"-long")){
+                _long = true;
+            }
+            if(!strcmp(tokens[i],"-link")){
+                _link = true; 
+            }   
+            if(!strcmp(tokens[i],"-acc")){
+                _acc = true; 
+            }
+
+        if(!isOption){
+            
+        }
+    }
+    struct stat filestat; 
+    struct passwd *ownr;
+    struct group *group;
+    char path[] = "./p1sl.c";
+    
+    stat(path, &filestat);
+
+    ownr = getpwuid(filestat.st_uid);
+    group = getgrgid(filestat.st_gid);
+
+    char symlink_s[PATH_MAX + 1];
+    //char *rpath = realpath(path, symlink_s);
+    //int is_link = S_ISLNK(filestat.st_mode);
+    char filename[16];
+    strcpy(filename, getLastSegmentFromPath(path));
+    if(ntokens == 1){    
+        printCurrentDirectory();
+    }else{
+        //output long
+        if(_long && !_link){
+            if(_acc){
+                printf("%s %ld %ld %s %s %lld %s\n", ctime(&filestat.st_atime),(long)filestat.st_nlink, (long)filestat.st_ino,ownr->pw_name,group->gr_name,(long long)filestat.st_size, filename);
+            }else{
+                printf("%s %ld %ld %s %s %lld %s\n", ctime(&filestat.st_mtime),(long)filestat.st_nlink, (long)filestat.st_ino,ownr->pw_name,group->gr_name,(long long)filestat.st_size, filename);
+            }
+        }else if(_long && _link){
+            if(_acc){
+                printf("%s %ld %ld %s %s %lld %s %s -> %s\n", ctime(&filestat.st_atime),(long)filestat.st_nlink, (long)filestat.st_ino,ownr->pw_name,group->gr_name,(long long)filestat.st_size, filename, path, symlink_s);
+            }else{
+                printf("%s %ld %ld %s %s %lld %s %s -> %s\n", ctime(&filestat.st_mtime),(long)filestat.st_nlink, (long)filestat.st_ino,ownr->pw_name,group->gr_name,(long long)filestat.st_size, filename, path, symlink_s);
+            }
+        }
+    }
+    
+
+
+    //three types of output line
+    //short list will give: 
+    //gives info on files in one line per file
+    
+    
+    
+    
+    
+    /*if(access(path, F_OK )){
+        printf("%ld %s \n",filestat.st_size, filename);
+    };*/
+    //print output
+    
+    
+    return 0;
+}
 int ayuda(char *tokens[], int ntokens){
     int i = 0;
     while(cmds[i].cmd_name != NULL){
