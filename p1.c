@@ -182,6 +182,38 @@ char* getLastSegmentFromPath(char path[]){
     }
     return previousFilename;
 }
+char LetraTF (mode_t m){
+    switch (m&S_IFMT) { /*and bit a bit con los bits de formato,0170000 */
+        case S_IFSOCK: return 's'; /*socket */
+        case S_IFLNK: return 'l'; /*symbolic link*/
+        case S_IFREG: return '-'; /* fichero normal*/
+        case S_IFBLK: return 'b'; /*block device*/
+        case S_IFDIR: return 'd'; /*directorio */
+        case S_IFCHR: return 'c'; /*char device*/
+        case S_IFIFO: return 'p'; /*pipe*/
+        default: return '?'; /*desconocido, no deberia aparecer*/
+    }
+}
+
+char * ConvierteModo2 (mode_t m){
+static char permisos[12];
+strcpy (permisos,"---------- ");
+permisos[0]=LetraTF(m);
+if (m&S_IRUSR) permisos[1]='r'; /*propietario*/
+if (m&S_IWUSR) permisos[2]='w';
+if (m&S_IXUSR) permisos[3]='x';
+if (m&S_IRGRP) permisos[4]='r'; /*grupo*/
+if (m&S_IWGRP) permisos[5]='w';
+if (m&S_IXGRP) permisos[6]='x';
+if (m&S_IROTH) permisos[7]='r'; /*resto*/
+if (m&S_IWOTH) permisos[8]='w';
+if (m&S_IXOTH) permisos[9]='x';
+if (m&S_ISUID) permisos[3]='s'; /*setuid, setgid y stickybit*/
+if (m&S_ISGID) permisos[6]='s';
+if (m&S_ISVTX) permisos[9]='t';
+return (permisos);
+}
+
 int isOption(char *token){
     if(token[0] == '-'){
         return 1;
@@ -207,43 +239,54 @@ int listfich(char *tokens[], int ntokens){
                 _acc = true; 
             }
 
-        if(!isOption){
+        if(!isOption(tokens[i]) && i > 0){
             
+            struct stat filestat; 
+            struct passwd *ownr;
+            struct group *group;
+            
+            char path[128];
+            strcpy(path,tokens[i]);
+            stat(path, &filestat);
+
+            char filename[16];
+            strcpy(filename, getLastSegmentFromPath(path));
+            if(!access(path, F_OK )){
+
+                //it exists! printf("%ld %s \n",filestat.st_size, filename);
+            }else{
+                perror("File doesn't exist. Try a different name.");
+            };
+            ownr = getpwuid(filestat.st_uid);
+            group = getgrgid(filestat.st_gid);
+
+            char symlink_s[PATH_MAX + 1];
+            //char *rpath = realpath(path, symlink_s);
+            //int is_link = S_ISLNK(filestat.st_mode);
+            
+            if(ntokens == 1){    
+                printCurrentDirectory();
+            }else{
+                //output long
+                if(_long && !_link){
+                    if(_acc){
+                        printf("%s %ld %ld %s %s %s %lld %s\n", ctime(&filestat.st_atime),(long)filestat.st_nlink, (long)filestat.st_ino,ownr->pw_name,group->gr_name,ConvierteModo2(filestat.st_mode),(long long)filestat.st_size, filename);
+                    }else{
+                        printf("%s %ld %ld %s %s %s %lld %s\n", ctime(&filestat.st_mtime),(long)filestat.st_nlink, (long)filestat.st_ino,ownr->pw_name,group->gr_name,ConvierteModo2(filestat.st_mode),(long long)filestat.st_size, filename);
+                    }
+                }else if(_long && _link){
+                    if(_acc){
+                        printf("%s %ld %ld %s %s %s %lld %s %s -> %s\n", ctime(&filestat.st_atime),(long)filestat.st_nlink, (long)filestat.st_ino,ownr->pw_name,group->gr_name,ConvierteModo2(filestat.st_mode),(long long)filestat.st_size, filename, path, symlink_s);
+                    }else{
+                        printf("%s %ld %ld %s %s %s %lld %s %s -> %s\n", ctime(&filestat.st_mtime),(long)filestat.st_nlink, (long)filestat.st_ino,ownr->pw_name,group->gr_name,ConvierteModo2(filestat.st_mode),(long long)filestat.st_size, filename, path, symlink_s);
+                    }
+                }
+            }
         }
     }
-    struct stat filestat; 
-    struct passwd *ownr;
-    struct group *group;
-    char path[] = "./p1sl.c";
+
+
     
-    stat(path, &filestat);
-
-    ownr = getpwuid(filestat.st_uid);
-    group = getgrgid(filestat.st_gid);
-
-    char symlink_s[PATH_MAX + 1];
-    //char *rpath = realpath(path, symlink_s);
-    //int is_link = S_ISLNK(filestat.st_mode);
-    char filename[16];
-    strcpy(filename, getLastSegmentFromPath(path));
-    if(ntokens == 1){    
-        printCurrentDirectory();
-    }else{
-        //output long
-        if(_long && !_link){
-            if(_acc){
-                printf("%s %ld %ld %s %s %lld %s\n", ctime(&filestat.st_atime),(long)filestat.st_nlink, (long)filestat.st_ino,ownr->pw_name,group->gr_name,(long long)filestat.st_size, filename);
-            }else{
-                printf("%s %ld %ld %s %s %lld %s\n", ctime(&filestat.st_mtime),(long)filestat.st_nlink, (long)filestat.st_ino,ownr->pw_name,group->gr_name,(long long)filestat.st_size, filename);
-            }
-        }else if(_long && _link){
-            if(_acc){
-                printf("%s %ld %ld %s %s %lld %s %s -> %s\n", ctime(&filestat.st_atime),(long)filestat.st_nlink, (long)filestat.st_ino,ownr->pw_name,group->gr_name,(long long)filestat.st_size, filename, path, symlink_s);
-            }else{
-                printf("%s %ld %ld %s %s %lld %s %s -> %s\n", ctime(&filestat.st_mtime),(long)filestat.st_nlink, (long)filestat.st_ino,ownr->pw_name,group->gr_name,(long long)filestat.st_size, filename, path, symlink_s);
-            }
-        }
-    }
     
 
 
@@ -255,9 +298,7 @@ int listfich(char *tokens[], int ntokens){
     
     
     
-    /*if(access(path, F_OK )){
-        printf("%ld %s \n",filestat.st_size, filename);
-    };*/
+    
     //print output
     
     
