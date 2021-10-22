@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include "dynamic_list.c"
-
+#include <errno.h>
 #include <pwd.h>
 #include <grp.h>
 //Autores
@@ -252,12 +252,7 @@ int listfich(char *tokens[], int ntokens){
             char filename[16];
             strcpy(filename, getLastSegmentFromPath(path));
             if(!access(path, F_OK )){
-
-                //it exists! printf("%ld %s \n",filestat.st_size, filename);
-            }else{
-                perror("File doesn't exist. Try a different name.");
-            };
-            ownr = getpwuid(filestat.st_uid);
+                ownr = getpwuid(filestat.st_uid);
             group = getgrgid(filestat.st_gid);
 
             char symlink_s[PATH_MAX + 1];
@@ -282,6 +277,11 @@ int listfich(char *tokens[], int ntokens){
                     }
                 }
             }
+                //it exists! printf("%ld %s \n",filestat.st_size, filename);
+            }else{
+                perror("");
+            };
+            
         }
     }
 
@@ -313,7 +313,7 @@ int ayuda(char *tokens[], int ntokens){
                 if(cmds[i].help_text != NULL){
                 printf("%s\n\n",cmds[i].help_text);
                 }else{
-                    printf("No help found for command %s\n\n",tokens[0]);
+                    perror("No help found for that command");
                 }
                 return 0;
             
@@ -322,7 +322,7 @@ int ayuda(char *tokens[], int ntokens){
         i++;
     }
     if(tokens[1] != NULL){
-    printf("No help found for input %s\n\n",tokens[1]);
+    perror("No help found for that command");
     }else if(ntokens == 1){
         printf("Usage: ayuda [cmd]\n\"ayuda\" displays a list of available commands. \"ayuda cmd\" gives a brief help on the usage of command \"cmd\"\n\n");
     }
