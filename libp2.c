@@ -1,18 +1,36 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+//utility functions
+int stringIsNumber(char* string[]){
+    bool isNumber=false;
+    bool foundNonDigitNumber = false;
+    for(int i = 0; i < sizeof(string)/sizeof(char); i++){
+        if(isdigit(string[i])){
+            foundNonDigitNumber = false;
+            break;
+        }
+    }
+    if(!foundNonDigitNumber){
+        isNumber = true;
+    }
+}
+
 int mallocimpl(char *tokens[],int ntokens){
-    size_t tam = 512; 
+    size_t tam = 0; 
     char* addr = malloc(512);
     bool _contains_free = false;
     bool _contains_tam = true;
     /*Parameter eval: */
-
+    //TODO: check function
     for(int i = 0; i < ntokens; i++){
         if(!strcmp(tokens[i],"-free")){
             _contains_free = true;
         }
-        /*TODO: check if tam is a number and is present*/
+        if(stringIsNumber(tokens[i])){
+            tam = atoi(tokens[i]);
+        }
+        
     }
     if(!_contains_free && _contains_tam){
         printf("Allocated %lu bytes on address %p\n",tam, addr);
@@ -63,8 +81,8 @@ int deallocimpl(char* tokens[], int ntokens){
         
         /**/
     }
-
-    if(ntokens == 1){
+    else if(ntokens == 1){
         /*Print list of currently allocated blocks.*/
     }
 }
+

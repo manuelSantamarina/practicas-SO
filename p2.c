@@ -5,6 +5,7 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <stat.h>
 #include <dirent.h>
 #include "dynamic_list.c"
 #include <errno.h>
