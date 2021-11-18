@@ -1,3 +1,4 @@
+#define _DEFAULT_SOURCE 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -5,13 +6,13 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <stat.h>
 #include <dirent.h>
 #include "dynamic_list.c"
+#include "memory_list.c"
 #include <errno.h>
 #include <pwd.h>
 #include <grp.h>
-
+#include <sys/types.h>
 #include "libp2.c"
 
 //Autores
@@ -30,7 +31,7 @@
 
 int ayuda(char *tokens[], int ntokens);
 int hist(char *tokens[],int ntokens, tList *L);
-int comando(char *tokens[],int ntokens,tList *L);
+int comando(char *tokens[],int ntokens,tList *L, mList *LM);
 int crear(char *tokens[], int ntokens);
 int borrar(char *tokens[], int ntokens);
 int borrarrec(char *tokens[], int ntokens);
@@ -38,14 +39,7 @@ int listfich(char *tokens[], int ntokens);
 int listdir(char *tokens[], int ntokens);
 bool escarpeta(char *name);
 
-void debug(char string[]){
-    printf("%s\n",string);
-    fflush(stdout);
-}
-void debug_int(int integer){
-    printf("%d\n",integer);
-    fflush(stdout);
-}
+
 void imprimirPrompt(){
     char name[32];
     char cwd[100] = "current working directory";
@@ -175,8 +169,11 @@ struct cmd cmds[] = {
     {"listdir",listdir,"Usage: listdir [-reca] [-recb] [-hid] [-long] [-link] [-acc] name1 name2 ...\nLists the contents of directories with names name1, name2 ...  If any of name1, name2 . . . is not a directory, info on it will be printed EXACTLY as with command listfich. If no name is given, the name of the current working directory will be printed (as with the carpeta command).\n\nOptions:\n-long\tLong listing.it will print out the date of last modification (in format YYYY/MM/DD-HH:mm), number of links, owner, group, mode (drwx format), size and name of the file. If any of the names is a directory, information on the directory file itsself will be printed. The format to be used is: date number of links (inode number) owner group mode size name\n\n-link\t-link is only meaningful for long listings: if the file is a symbolic link the name of the file it points to is also printed. Format: date number of links (inode number) owner group mode size name->file the link points to.\n\n-acc\tLast access time will be used instead of last modification time.\n-long\tLong listing.it will print out the date of last modification (in format YYYY/MM/DD-HH:mm), number of links, owner, group, mode (drwx format), size and name of the file. If any of the names is a directory, information on the directory file itsself will be printed. The format to be used is: date number of links (inode number) owner group mode size name\n\n-link\t-link is only meaningful for long listings: if the file is a symbolic link the name of the file it points to is also printed. Format: date number of links (inode number) owner group mode size name->file the link points to.\n\n-acc\tLast access time will be used instead of last modification time.\n-reca\tWhen listing a directory's contents, subdirectories will be listed recursively BEFORE all the files in the directory. (if the -hid option is also given, hidden subdirectories will also get listed, except . and .. to avoid infinite recursion"},
     {"comando", comando, "Usage: comando N\n Repeats command number N (from historic list).\n"},
     {"malloc",mallocimpl,"Usage: malloc [-free] [tam]\n The shell allocates tam bytes using malloc and shows the memory address returned by malloc. This address, together with tam and the time of the allocation, must be kept in the aforementioned list. If tam is not specified the command will show the list of addresses allocated with the malloc command. malloc() requires an argument of size_t.\n\nOptions: -free: \tDeallocates one of the blocks of size tam that has been allocated with the command malloc. If no such block exists or if tam is not specified, the command will show the list of addresses allocated with the malloc command. Should there be more than one block of size tam it deallocates ONLY one of them(any)."},
+    {"shared",shared,"No help"},
+    {"memoria",memoria,"shared: ...\n"},
     {"mmap", mmapimpl, "Usage: mmap [-free] fich [perm]\nMaps in memory the file fich (all of its length starting at offset 0) and shows the memory address where the file has been mapped. perm represents the mapping permissions (rwx format, without spaces). The address of the mapping, together with the size, the name of the file, the file descriptor, and the time of the mapping will be stored in the aforementioned list. If fich is not specified, the command will show the list of addresses allocated with the mmap command.\n\nOptions: -free\tUnmaps and closes the file fich and removes the address where it was mapped from the list. If fich has been mapped several times, only one of the mappings will be undone. If the file fich is not mapped by the process or if fich is not specified, the command will show the list of addresses (and size, and time . . . ) allocated with the mmap command."},
     {"dealloc",deallocimpl,"Usage: dealloc [-malloc|-shared|-mmap]...\nDeallocates one of the memory blocks allocated with the command malloc, mmap or shared and removes it from the list. If no arguments are given, it prints a list of the allocated memory blocks (that is, prints the list).\n\nOptions:\n-malloc size\t Does exactly the same as malloc -free size.\ndealloc -shared cl\tDoes exactly the same as shared -free cl\ndealloc -mmap file\tDoes exactly the same as mmap -free file.\ndealloc addr\tDeallocates addr( it searches in the list how it was allocated, and proceeds accordingly) and removes it from the list. If addr is not in the list or if addr is not supplied the command will show all the addresses (and size, and time...) allocated with the malloc, mmap, shared commands. This does the same (albeit with a different parameter) as malloc -free, shared -free or mmap-free deppending on addr."},
+
     {NULL, NULL}
 };
 char* getLastSegmentFromPath(char path[]){
@@ -288,7 +285,7 @@ int listfich(char *tokens[], int ntokens){
             }
                 //it exists! printf("%ld %s \n",filestat.st_size, filename);
             }else{
-                debug(path);
+                con_log(path);
                 perror("");
             };
             
@@ -686,7 +683,7 @@ int listdir(char *tokens[],int ntokens){
 }
 
 //si quiero insertar al final inserto en 0
-int processCmd(char *tokens[], int ntokens, tList *L) {
+int processCmd(char *tokens[], int ntokens, tList *L, mList *LM) {
     int i;
     tItemL item;
     strcpy(item.command,tokens[0]);
@@ -705,7 +702,7 @@ int processCmd(char *tokens[], int ntokens, tList *L) {
         }
         if(strcmp(tokens[0], "comando")==0){
             if(ntokens==2){
-                comando(tokens,ntokens,L);
+                comando(tokens,ntokens,L, LM);
             }else{
                 printf("comando no reconocido\n");
             }
@@ -715,15 +712,14 @@ int processCmd(char *tokens[], int ntokens, tList *L) {
         if(strcmp(tokens[0], cmds[i].cmd_name) ==0){
 
             insertItem(item, NULL,L);
-
-            return cmds[i].cmd_fun(tokens, ntokens);
+            return cmds[i].cmd_fun(tokens, ntokens, LM);
         }
     }
     printf("Comando no reconocido\n");
     return 0;
 }
 
-int comando(char *tokens[],int ntokens,tList *L){
+int comando(char *tokens[],int ntokens,tList *L, mList *LM){
     int n;
     char *tr[MAX_TOKENS];
     tItemL item;
@@ -742,12 +738,12 @@ int comando(char *tokens[],int ntokens,tList *L){
         strcat(comd," ");
         strcat(comd,par);
         n= parseString(comd,tr);
-        processCmd( tr, n, L);
+        processCmd( tr, n, L, LM);
 
         return 1;
     }else{
         n= parseString(comd,tr);
-        processCmd(tr, n, L);
+        processCmd(tr, n, L, LM);
         return 1;
     }
 }
@@ -760,12 +756,14 @@ int main(){
 
     tList L;
     createEmptyList(&L);
+    tList M;
+    createEmptyList(&M);
 
     while(!end) {
         imprimirPrompt();
         fgets(line,MAX_LINE,stdin);
         ntokens = parseString(line, tokens);
-        end = processCmd(tokens, ntokens, &L);
+        end = processCmd(tokens, ntokens, &L,&M);
 
     }
     return 0;

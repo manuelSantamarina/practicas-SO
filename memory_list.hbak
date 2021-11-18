@@ -2,12 +2,12 @@
 #include <stddef.h>
 
 typedef struct tNodeM* tPosLM;
-typedef char addresM[1024];
+typedef char addressM[1024];
 typedef size_t sizeM[1024];
 typedef char timeM[1024];
-enum typeM {MALLOC,MMAP,SHARED};
+typedef enum typeM {MALLOC,MMAP,SHARED};
 typedef struct tItemLM{
-    addresM maddres;
+    addressM maddress;
     sizeM size;
     timeM time;
     enum typeM type;

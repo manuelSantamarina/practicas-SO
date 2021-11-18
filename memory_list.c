@@ -1,35 +1,36 @@
-#include "memorylist.h"
+#include "memory_list.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
-void createEmptyListM(tListM * L){
+void createEmptyListM(mList * L){
     *L=NULL;
 }
-bool isEmptyListM(tListM L){
+bool isEmptyListM(mList L){
     return L==NULL;
 }
-tItemLM getItemM(tPosLM p,tListM L){
+
+mItemL getItemM(mPosL p,mList L){
     return p->dataM;
 }
-void updateItemM(tItemLM d, tPosLM p, tListM *L){
+void updateItemM(mItemL d, mPosL p, mList *L){
     p->dataM=d;
 }
-tPosLM nextM(tPosLM p, tListM L){
+mPosL nextM(mPosL p, mList L){
     return p->nextM;
 }
-tPosLM firstM(tListM L){
+mPosL firstM(mList L){
     return L;
 }
 
-tPosLM lastM(tListM L){
-    tPosLM p;
+mPosL lastM(mList L){
+    mPosL p;
     for(p=L;p->nextM!=NULL;p=p->nextM);
     return p;
 }
-void deleteListM(tListM * L){
-    tPosLM p;
+void deleteListM(mList * L){
+    mPosL p;
     while(*L!=NULL){
         p=*L;
         *L=(*L)->nextM;
@@ -37,8 +38,8 @@ void deleteListM(tListM * L){
     }
 }
 
-void deleteAtPositionM(tPosLM p, tListM *L){
-    tPosLM q;
+void deleteAtPositionM(mPosL p, mList *L){
+    mPosL q;
     if(p==*L)
         *L=(*L)->nextM;
     else if(p->nextM==NULL){
@@ -53,12 +54,13 @@ void deleteAtPositionM(tPosLM p, tListM *L){
     }
     free(p);
 }
-bool createNodeM(tPosLM *p){
+bool createNodeM(mPosL *p){
     *p=malloc(sizeof(struct tNodeM));
     return *p!=NULL;
 }
-bool insertItemM(tItemLM d, tPosLM p, tListM *L){
-    tPosLM q,r;
+bool insertItemM(mItemL d, mPosL p, mList *L){
+    mPosL q,r;
+
     if(!createNodeM(&q))
         return false;
     else{
