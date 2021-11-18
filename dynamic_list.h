@@ -2,8 +2,8 @@
 #include <stddef.h>
 
 typedef struct tNode* tPosL;
-typedef char tCommand[256];
-typedef char tParameters[10];
+typedef char tCommand[1024];
+typedef char tParameters[1024];
 typedef struct tItemL{
     tCommand command;
     tParameters parameters;

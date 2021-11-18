@@ -3,13 +3,13 @@
 
 typedef struct tNodeM* mPosL;
 
-typedef  int *address;
+typedef  int *addres;
 typedef  size_t msize;
 typedef int key;
 enum mtype {MALLOC,MMAP,SHARED};
 
 typedef struct mItemL{
-    address maddress;
+    addres maddres;
     size_t size;
     time_t time;
     enum mtype type;

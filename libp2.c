@@ -1,17 +1,12 @@
 #define _DEFAULT_SOURCE
 #include <stdlib.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <ctype.h>
-#include <sys/mman.h>
 #include <sys/shm.h>
-#include <stdint.h>
-#include <sys/wait.h>
+#include "memorylist.c"
 #include <errno.h>
-
-#include "debug_utils.c"
-#include "memory_list.c"
-
+#include <stdint.h>
+#include <sys/shm.h>
+#include <sys/wait.h>
+#include <sys/mman.h>
 int val1;
 int val2;
 int val3;
@@ -19,27 +14,6 @@ static int val4;
 static int val5;
 static int val6;
 
-//utility functions
-bool stringIsNumber(char string[]){
-    bool isNumber = true;
-    for(int i = 0; i < strlen(string);i++){
-        if(isdigit(string[i])){
-            isNumber = false;
-        }
-    }
-    /*bool isNumber=false;
-    bool foundNonDigitNumber = false;
-    for(int i = 0; i < strlen(string); i++){
-        if(isdigit(string[i])){
-            foundNonDigitNumber = false;
-            break;
-        }
-    }
-    if(!foundNonDigitNumber){
-        isNumber = true;
-    }
-    return isNumber;*/
-}
 
 int mallocimpl(char *tokens[],int ntokens, mList *LM){
     size_t tam = 0; 
@@ -119,11 +93,13 @@ int mmapimpl(char tokens[], int ntokens){
     }if(!_contains_free && !_contains_dir){
         /*TODO: prints blocks allocated by mmap*/
     }else{
-        perror('Unrecognized argument format, please use mmap [-free] fich [perm]');
+        perror("Unrecognized argument format.");
     }
+    return 0;
 }
 
 int deallocimpl(char* tokens[], int ntokens){
+
     
     bool _contains_malloc = false;
     bool _contains_shared = false;
@@ -139,6 +115,51 @@ int deallocimpl(char* tokens[], int ntokens){
         /*Print list of currently allocated blocks.*/
     }
 }
+
+void SharedDelkey (char *args[]) /*arg[0] points to a str containing the key*/
+{
+    key_t clave;
+    int id;
+    char *key=args[0];
+
+    if (key==NULL || (clave=(key_t) strtoul(key,NULL,10))==IPC_PRIVATE){
+        printf (" shared -delkey clave_valida\n");
+        return;
+    }
+    if ((id=shmget(clave,0,0666))==-1){
+        perror ("shmget: imposible obtener memoria compartida");
+        return;
+    }
+    if (shmctl(id,IPC_RMID,NULL)==-1)
+        perror ("shmctl: imposible eliminar memoria compartida\n");
+}
+
+void * ObtenerMemoriaShmget (key_t clave, size_t tam)
+{ /*Obtienen un puntero a una zaona de memoria compartida*/
+/*si tam >0 intenta crearla y si tam==0 asume que existe*/
+    void * p;
+    int aux,id,flags=0777;
+    struct shmid_ds s;
+    if (tam) /*si tam no es 0 la crea en modo exclusivo
+esta funcion vale para shared y shared -create*/
+        flags=flags | IPC_CREAT | IPC_EXCL;
+/*si tam es 0 intenta acceder a una ya creada*/
+    if (clave==IPC_PRIVATE) /*no nos vale*/
+    {errno=EINVAL; return NULL;}
+    if ((id=shmget(clave, tam, flags))==-1)
+    return (NULL);
+    if ((p=shmat(id,NULL,0))==(void*) -1){
+        aux=errno; /*si se ha creado y no se puede mapear*/
+        if (tam) /*se borra */
+            shmctl(id,IPC_RMID,NULL);
+        errno=aux;
+        return (NULL);
+    }
+    shmctl (id,IPC_STAT,&s);
+/* Guardar En Direcciones de Memoria Shared (p, s.shm_segsz, clave.....);*/
+    return (p);
+}
+
 int shared(char *tokens[], int ntokens, mList *LM){
 
     if(ntokens==1){
@@ -173,7 +194,7 @@ int shared(char *tokens[], int ntokens, mList *LM){
             printf("Imposible asignar memoria compartida clave %s",tokens[1]);
             perror(":No such file or directory");
         }else{
-            item.maddress=mem;
+            item.maddres=mem;
             insertItemM(item,NULL,LM);
         }
     } else if(strcmp(tokens[1],"-free")==0){
@@ -192,7 +213,7 @@ int shared(char *tokens[], int ntokens, mList *LM){
         if(cont2!=0){
             char *arg[10];
             arg[0]=tokens[2];
-            if(shmdt(p->dataM.maddress) == -1){
+            if(shmdt(p->dataM.maddres) == -1){
                 perror ("shmdt: imposible eliminar memoria compartida\n");
             }else{
                 deleteAtPositionM(p,LM);
@@ -247,59 +268,13 @@ int shared(char *tokens[], int ntokens, mList *LM){
                 printf("Imposible asignar memoria compartida clave %s",tokens[1]);
                 perror(":No such file or directory");
             }else{
-                itemaux.maddress=mem;
+                itemaux.maddres=mem;
                 insertItemM(itemaux,NULL,LM);
             }
         }
     }
     return 0;
 }
-
-void SharedDelkey (char *args[]) /*arg[0] points to a str containing the key*/
-{
-    key_t clave;
-    int id;
-    char *key=args[0];
-
-    if (key==NULL || (clave=(key_t) strtoul(key,NULL,10))==IPC_PRIVATE){
-        printf (" shared -delkey clave_valida\n");
-        return;
-    }
-    if ((id=shmget(clave,0,0666))==-1){
-        perror ("shmget: imposible obtener memoria compartida");
-        return;
-    }
-    if (shmctl(id,IPC_RMID,NULL)==-1)
-        perror ("shmctl: imposible eliminar memoria compartida\n");
-}
-
-void * ObtenerMemoriaShmget (key_t clave, size_t tam)
-{ /*Obtienen un puntero a una zaona de memoria compartida*/
-/*si tam >0 intenta crearla y si tam==0 asume que existe*/
-    void * p;
-    int aux,id,flags=0777;
-    struct shmid_ds s;
-    if (tam) /*si tam no es 0 la crea en modo exclusivo
-esta funcion vale para shared y shared -create*/
-        flags=flags | IPC_CREAT | IPC_EXCL;
-/*si tam es 0 intenta acceder a una ya creada*/
-    if (clave==IPC_PRIVATE) /*no nos vale*/
-    {errno=EINVAL; return NULL;}
-    if ((id=shmget(clave, tam, flags))==-1)
-    return (NULL);
-    if ((p=shmat(id,NULL,0))==(void*) -1){
-        aux=errno; /*si se ha creado y no se puede mapear*/
-        if (tam) /*se borra */
-            shmctl(id,IPC_RMID,NULL);
-        errno=aux;
-        return (NULL);
-    }
-    shmctl (id,IPC_STAT,&s);
-/* Guardar En Direcciones de Memoria Shared (p, s.shm_segsz, clave.....);*/
-    return (p);
-}
-
-
 
 void dopmap (void) /*no arguments necessary*/
 { pid_t pid; /*ejecuta el comando externo pmap para */
@@ -312,7 +287,7 @@ void dopmap (void) /*no arguments necessary*/
     }
     if (pid==0){
         if (execvp(argv[0],argv)==-1)
-            perror("Cannot execute Pmap");
+            perror("cannot execute pmap");
         exit(1);
     }
     waitpid (pid,NULL,0);
