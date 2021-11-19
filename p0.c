@@ -702,7 +702,11 @@ int processCmd(char *tokens[], int ntokens, tList *L,mList *LM) {
         if(strcmp(tokens[0], cmds[i].cmd_name) ==0){
 
             insertItem(item, NULL,L);
-            if(strcmp(tokens[0], "shared")==0||strcmp(tokens[0], "memoria")==0){
+            if(
+            strcmp(tokens[0], "shared")==0
+            ||strcmp(tokens[0], "memoria")==0
+            ||strcmp(tokens[0],"malloc")==0
+            ){
                 return cmds[i].cmd_fun(tokens, ntokens,LM);
             }
             return cmds[i].cmd_fun(tokens, ntokens);

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/shm.h>
@@ -10,6 +11,7 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 int val1;
 int val2;
@@ -19,7 +21,25 @@ static int val5;
 static int val6;
 
 
-int mallocimpl(char *tokens[],int ntokens, mList *LM){
+void printMallocBlocks(mList const *LM) {
+    printf("Currently allocated segments with malloc for this process:\n");
+    mPosL p = firstM(*LM);
+    while (p!=NULL){
+        if(p->dataM.type==MALLOC){
+            //Se cogen movidos
+            addres mem = p->dataM.maddres;
+            printf(" \t\t 0x%lx\t\t\t\t", (uintptr_t)&mem);
+            printf("%ld",p->dataM.size);
+            time_t t = p->dataM.time;
+            struct tm tm = *localtime(&t);
+            printf(" %d-%02d-%02d %02d:%02d:%02d\t\t", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+            printf("malloc\n");
+        }
+        p=p->nextM;
+    }
+}
+
+int mallocimpl(char *tokens[], int ntokens, mList *LM){
     size_t tam = 0; 
     char* addr = malloc(512);
     bool _contains_free = false;
@@ -33,7 +53,6 @@ int mallocimpl(char *tokens[],int ntokens, mList *LM){
         if(!strcmp(tokens[i],"-free")){
             _contains_free = true;
         }
-        
         if(atoi(tokens[i]) != 0){
             printf("%d",i);
             
@@ -41,28 +60,50 @@ int mallocimpl(char *tokens[],int ntokens, mList *LM){
             printf("Se ha recibido un tamaño de %lu\n", tam );
             _contains_tam = true;
         }
-        
     }
+
     if(!_contains_free && _contains_tam ){
         printf("Allocated %lu bytes on address %p\n",tam, addr);
-        time_t t;
-        /*mItemL listItem = {
-            .maddress = addr,
-            .size = tam,
-            .time = localtime(&t),
-            .type = MALLOC
-        };*/
-    
+
+        mItemL item;
+        time_t t = time(NULL);
+        item.time= t;
+        item.size= tam;
+        item.type= MALLOC;
+        //CORREGIR PORQUE SE EJECUTA SIEMPRE
+        if(addr==NULL){
+            printf("Imposible asignar memoria");
+            perror(":No such file or directory");
+        }else{
+            item.maddres= malloc(tam);
+            insertItemM(item,NULL,LM);
+            //TODO: Da segfault
+        }
         /*TODO: include in list*/
         return 0;
     }else if (_contains_free && _contains_tam){
-        free(addr);
-        printf("Freed %lu bytes on address %p\n",tam,addr);
+        bool found = false;
+        mPosL p = firstM(*LM);
+        while (p!=NULL) {
+            if (p->dataM.type == MALLOC && p->dataM.size == tam) {
+                free(p->dataM.maddres);
+                printf("Freed %lu bytes on address %p", p->dataM.size, p->dataM.maddres);
+                deleteAtPositionM(p,LM);
+                found = true;
+                break;
+            }
+
+            p = p->nextM;
+        }
+        if (!found) {
+            printMallocBlocks(LM);
+        }
+        
         /*TODO: remove from list*/
         return 0;
     }else if(!_contains_free && !_contains_tam){
         /*TODO: Print currently allocated segments*/
-        printf("Currently allocated segments: \n");
+        printMallocBlocks(LM);
         return 0;
     }else {
         perror("The arguments introduced are incorrect. Correct usage is malloc [-free] [tam]\n");
@@ -105,7 +146,7 @@ void SharedDelkey (char *args[]) /*arg[0] points to a str containing the key*/
         return;
     }
     if ((id=shmget(clave,0,0666))==-1){
-        perror ("shmget: imposible obtener memoria compartida");
+        perror ("shmget: imposible obtener memoria compartida\n");
         return;
     }
     if (shmctl(id,IPC_RMID,NULL)==-1)
@@ -167,6 +208,7 @@ int shared(char *tokens[], int ntokens, mList *LM){
         key1= (item.key);
         item.size= atoi(tokens[3]);
         item.type=SHARED;
+
         int *mem=ObtenerMemoriaShmget(key1,item.size);
         if(mem==NULL){
             printf("Imposible asignar memoria compartida clave %s",tokens[1]);
@@ -464,8 +506,6 @@ void Mmap (char *arg[], mList *LM){
 #define LEERCOMPLETO ((ssize_t)-1)
 
 ssize_t LeerFichero (char *fich, void *p, ssize_t n){
-    
-    
     ssize_t nleidos,tam=n; /*si n==-1 lee el fichero completo*/
     int df, aux;
     struct stat s;
@@ -489,3 +529,4 @@ int mmapimpl(char* tokens[], int ntokens, mList *LM){
     Mmap(tokens, LM);
     return 0; 
 }
+

@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stddef.h>
+#include <bits/types/time_t.h>
 
 typedef struct tNodeM* mPosL;
 
