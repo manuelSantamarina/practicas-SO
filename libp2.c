@@ -145,7 +145,7 @@ int deallocimpl(char* tokens[], int ntokens, mList *LM){
     bool _contains_mmap = false;
     bool _contains_num = false;
     bool _contains_arg = false;
-    int* addr;
+    int* addr = 0;
     size_t num;
     for(int i = 0; i < ntokens; i++){
         if(!strcmp(tokens[i],"-malloc")){
