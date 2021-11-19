@@ -87,7 +87,7 @@ int mallocimpl(char *tokens[], int ntokens, mList *LM){
         while (p!=NULL) {
             if (p->dataM.type == MALLOC && p->dataM.size == tam) {
                 free(p->dataM.maddres);
-                printf("Freed %lu bytes on address %p", p->dataM.size, p->dataM.maddres);
+                printf("Freed %lu bytes on address %p\n", p->dataM.size, p->dataM.maddres);
                 deleteAtPositionM(p,LM);
                 found = true;
                 break;
