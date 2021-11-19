@@ -1,5 +1,5 @@
-#define _DEFAULT_SOURCE
 #include <stdlib.h>
+#include <sys/types.h>
 #include <sys/shm.h>
 #include "memorylist.c"
 #include <errno.h>
@@ -7,6 +7,10 @@
 #include <sys/shm.h>
 #include <sys/wait.h>
 #include <sys/mman.h>
+#include <time.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 int val1;
 int val2;
 int val3;
@@ -61,7 +65,7 @@ int mallocimpl(char *tokens[],int ntokens, mList *LM){
         printf("Currently allocated segments: \n");
         return 0;
     }else {
-        printf("The arguments introduced are incorrect. Correct usage is malloc [-free] [tam]\n");
+        perror("The arguments introduced are incorrect. Correct usage is malloc [-free] [tam]\n");
         return 0;
     }
     /*Types of input: 
@@ -70,32 +74,6 @@ int mallocimpl(char *tokens[],int ntokens, mList *LM){
         malloc -free 512 !contains free && _contains tam X
         Corregir: se repite varias veces la misma dirección.
         */
-}
-
-int mmapimpl(char tokens[], int ntokens){
-
-    bool _contains_free = false;
-    bool _contains_dir;
-    char* _dir = "";
-    char* _perm = "";
-
-    char* address = "";
-   if(!_contains_free && _contains_dir) {
-   }else if(_contains_free){
-       /*TODO*/
-       
-       char length = "";/*gets length from list or filesystem and _dir*/
-
-
-       munmap(address, length);
-        /*TODO: Removes it from the list.*/
-    
-    }if(!_contains_free && !_contains_dir){
-        /*TODO: prints blocks allocated by mmap*/
-    }else{
-        perror("Unrecognized argument format.");
-    }
-    return 0;
 }
 
 int deallocimpl(char* tokens[], int ntokens){
@@ -322,7 +300,7 @@ int memoria(char *tokens[], int ntokens, mList *LM){
         tokens[1]="-all";
         memoria(tokens,2,LM);
     } else{
-        printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
+        printf("******Lista de bloques asignados para el proceso %d\n",getpid());
         if(blocks){
             mPosL p = firstM(*LM);
             while (p!=NULL){
@@ -370,4 +348,144 @@ int memoria(char *tokens[], int ntokens, mList *LM){
         }
     }
     return 0;
+}
+
+void recursiva (int n){
+    char automatico[4086];
+    static char estatico[4096];
+    printf ("parametro n:%d en %p\n",n,&n);
+
+    printf ("array estatico en:%p \n",estatico);
+    printf ("array automatico en %p\n",automatico);
+    n--;
+    if (n>0)
+        recursiva(n);
+}
+
+int volcarmem(char *tokens[], int ntokens){
+    if(ntokens==2){
+        unsigned char* addres;
+        addres = (unsigned char *) strtol(tokens[1],0,16);
+        for(int long long i=0;i<25;i++){
+            printf("%3x\t", *addres);
+            addres = addres +1;
+        }
+        printf("\n");
+        addres = (unsigned char *) strtol(tokens[1],0,16);
+        for(int i=0;i<25;i++){
+            unsigned char st=*addres;
+            int x= (int)st;
+            if(x<32||x>126){
+                printf("%3c\t", 32);
+            } else{
+                printf("%3c\t", x);
+            }
+            addres = addres +1;
+        }
+        printf("\n");
+    } else{
+        unsigned char* addres;
+        addres = (unsigned char *) strtol(tokens[1],0,16);
+        for(int long long i=0;i< atoi(tokens[2]);i++){
+            if(i%30==1){
+                printf("\n");
+            }
+            printf("%3x\t", *addres);
+            addres = addres +1;
+        }
+        printf("\n");
+        addres = (unsigned char *) strtol(tokens[1],0,16);
+        for(int long long i=0;i<atoi(tokens[2]);i++){
+            unsigned char st=*addres;
+            int x= (int)st;
+            if(i%30==1){
+                printf("\n");
+            }
+            if(x<32|x>126){
+                printf("%3c\t", 32);
+            } else{
+                printf("%3c\t", x);
+            }
+            addres = addres +1;
+        }
+        printf("\n");
+    }
+    return 0;
+}
+
+void *MmapFichero (char * fichero, int protection)
+{
+int df, map=MAP_PRIVATE,modo=O_RDONLY;
+struct stat s;
+void *p;
+if (protection&PROT_WRITE) modo=O_RDWR;
+if (stat(fichero,&s)==-1 || (df=open(fichero, modo))==-1)
+return NULL;
+if ((p=mmap (NULL,s.st_size, protection,map,df,0))==MAP_FAILED)
+return NULL;
+/*Guardar Direccion de Mmap (p, s.st_size,fichero,df......);*/
+return p;
+}
+
+
+void Mmap (char *arg[], mList *LM){
+    char *perm;
+    void *p;
+    int protection=0;
+    if (arg[1]==NULL)
+    {
+         printf("******Lista de bloques asignados con mmap para el proceso %d\n",getpid());
+        mPosL p = firstM(*LM);
+        while (p!=NULL){
+            if(p->dataM.type==SHARED){
+                key_t key1= p->dataM.key;
+                int *mem=ObtenerMemoriaShmget(key1,p->dataM.size);
+                printf(" \t\t 0x%lx\t\t\t\t", (uintptr_t)&mem);
+                printf("%ld",p->dataM.size);
+                time_t t = p->dataM.time;
+                struct tm tm = *localtime(&t);
+                printf(" %d-%02d-%02d %02d:%02d:%02d\t\t", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+                printf("shared (key %d)\n",p->dataM.key);
+            }
+            p=p->nextM;
+        }
+    if ((perm=arg[2])!=NULL && strlen(perm)<4) {
+    if (strchr(perm,'r')!=NULL) protection|=PROT_READ;
+    if (strchr(perm,'w')!=NULL) protection|=PROT_WRITE;
+    if (strchr(perm,'x')!=NULL) protection|=PROT_EXEC;
+    }
+    if ((p=MmapFichero(arg[0],protection))==NULL)
+        perror("Imposible mapear fichero");
+    else
+        printf("fichero %s mapeado en %p\n", arg[0], p);
+    }
+}
+
+#define LEERCOMPLETO ((ssize_t)-1)
+
+ssize_t LeerFichero (char *fich, void *p, ssize_t n){
+    
+    
+    ssize_t nleidos,tam=n; /*si n==-1 lee el fichero completo*/
+    int df, aux;
+    struct stat s;
+
+    if (stat (fich,&s)==-1 || (df=open(fich,O_RDONLY))==-1)
+        return ((ssize_t)-1);
+    if (n==LEERCOMPLETO)
+        tam=(ssize_t) s.st_size;
+    if ((nleidos=read(df,p, tam))==-1){
+        aux=errno;
+        close(df);
+        errno=aux;
+        return ((ssize_t)-1);
+        }
+    close (df);
+
+    return (nleidos);
+}
+
+int mmapimpl(char* tokens[], int ntokens, mList *LM){
+    Mmap(tokens, LM);
+    return 0; 
 }
