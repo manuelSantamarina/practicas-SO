@@ -13,6 +13,7 @@ typedef struct mItemL{
     addres maddres;
     size_t size;
     time_t time;
+    char filename;
     enum mtype type;
     key key;
 }mItemL;

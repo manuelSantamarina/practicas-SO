@@ -38,6 +38,46 @@ void printMallocBlocks(mList const *LM) {
         p=p->nextM;
     }
 }
+void printMmapBlocks(mList const *LM) {
+    printf("Currently allocated segments with mmap for this process:\n");
+    mPosL p = firstM(*LM);
+    while (p!=NULL){
+        if(p->dataM.type==MMAP){
+            //Se cogen movidos
+            addres mem = p->dataM.maddres;
+            printf(" \t\t 0x%lx\t\t\t\t", (uintptr_t)&mem);
+            printf("%ld",p->dataM.size);
+            time_t t = p->dataM.time;
+            struct tm tm = *localtime(&t);
+            printf(" %d-%02d-%02d %02d:%02d:%02d\t\t", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+            printf("malloc\n");
+        }
+        p=p->nextM;
+    }
+}
+void printSharedBlocks(mList const *LM);
+void SharedDelkey (char *args[]);
+void unmapMmapByFich(mList *LM, char fich[]);
+void unmapMmap(mList *LM, bool found);
+void deleteOnListByAddress(mList *LM, size_t addr);
+void removeMallocFromList(mList *LM, size_t tam) {
+    bool found = false;
+    mPosL p = firstM(*LM);
+    while (p!=NULL) {
+        if (p->dataM.type == MALLOC && p->dataM.size == tam) {
+            free(p->dataM.maddres);
+            printf("Freed %lu bytes on address %p\n", p->dataM.size, p->dataM.maddres);
+            deleteAtPositionM(p,LM);
+            found = true;
+            break;
+        }
+
+        p = p->nextM;
+    }
+    if (!found) {
+        printMallocBlocks(LM);
+    }
+}
 
 int mallocimpl(char *tokens[], int ntokens, mList *LM){
     size_t tam = 0; 
@@ -54,10 +94,7 @@ int mallocimpl(char *tokens[], int ntokens, mList *LM){
             _contains_free = true;
         }
         if(atoi(tokens[i]) != 0){
-            printf("%d",i);
-            
             tam = atoi(tokens[i]);
-            printf("Se ha recibido un tamaño de %lu\n", tam );
             _contains_tam = true;
         }
     }
@@ -82,24 +119,7 @@ int mallocimpl(char *tokens[], int ntokens, mList *LM){
         /*TODO: include in list*/
         return 0;
     }else if (_contains_free && _contains_tam){
-        bool found = false;
-        mPosL p = firstM(*LM);
-        while (p!=NULL) {
-            if (p->dataM.type == MALLOC && p->dataM.size == tam) {
-                free(p->dataM.maddres);
-                printf("Freed %lu bytes on address %p\n", p->dataM.size, p->dataM.maddres);
-                deleteAtPositionM(p,LM);
-                found = true;
-                break;
-            }
-
-            p = p->nextM;
-        }
-        if (!found) {
-            printMallocBlocks(LM);
-        }
-        
-        /*TODO: remove from list*/
+        removeMallocFromList(LM, tam);
         return 0;
     }else if(!_contains_free && !_contains_tam){
         /*TODO: Print currently allocated segments*/
@@ -117,41 +137,55 @@ int mallocimpl(char *tokens[], int ntokens, mList *LM){
         */
 }
 
-int deallocimpl(char* tokens[], int ntokens){
+int deallocimpl(char* tokens[], int ntokens, mList *LM){
 
     
     bool _contains_malloc = false;
     bool _contains_shared = false;
     bool _contains_mmap = false;
-    bool _contains_dir = false;
+    bool _contains_num = false;
+    bool _contains_arg = false;
+    int* addr;
+    size_t num;
+    for(int i = 0; i < ntokens; i++){
+        if(!strcmp(tokens[i],"-malloc")){
+            _contains_malloc = true;
+        }
+        if(!strcmp(tokens[i],"-shared")){
+            _contains_shared = true;
+        }
+        if(!strcmp(tokens[i],"-mmap")){
+            _contains_mmap = true;
+        }
+        if(atoi(tokens[i]) != 0){
+            num = atoi(tokens[i]);
+            *addr = atoi(tokens[i]);
+            printf("Se ha recibido un número %lu\n", num );
+            _contains_num = true;
+        }
+    }
+
+
     /*dealloc addr*/
-    if(!_contains_malloc && !_contains_shared &&!_contains_mmap &&!_contains_dir){
+    if(_contains_malloc && _contains_num) {
+        removeMallocFromList(LM, atoi(tokens[ntokens - 1]));
+    }else if(_contains_shared && _contains_num) {
+        deleteOnListByAddress(LM,*addr);
+    }else if (_contains_mmap) {
+        unmapMmapByFich(LM,tokens[ntokens-1]);
+    }else if(_contains_num){
+        deleteOnListByAddress(LM,*addr);
+    }if(!_contains_malloc && !_contains_shared &&!_contains_mmap &&!_contains_arg){
         /*TODO: get allocation mode from list iterating by address parameter*/
-        
-        /**/
+        printMallocBlocks(LM);
+        printSharedBlocks(LM);
+        printMmapBlocks(LM);
     }
-    else if(ntokens == 1){
-        /*Print list of currently allocated blocks.*/
-    }
+
+    return 0;
 }
 
-void SharedDelkey (char *args[]) /*arg[0] points to a str containing the key*/
-{
-    key_t clave;
-    int id;
-    char *key=args[0];
 
-    if (key==NULL || (clave=(key_t) strtoul(key,NULL,10))==IPC_PRIVATE){
-        printf (" shared -delkey clave_valida\n");
-        return;
-    }
-    if ((id=shmget(clave,0,0666))==-1){
-        perror ("shmget: imposible obtener memoria compartida\n");
-        return;
-    }
-    if (shmctl(id,IPC_RMID,NULL)==-1)
-        perror ("shmctl: imposible eliminar memoria compartida\n");
-}
 
 void * ObtenerMemoriaShmget (key_t clave, size_t tam)
 { /*Obtienen un puntero a una zaona de memoria compartida*/
@@ -179,24 +213,48 @@ esta funcion vale para shared y shared -create*/
     return (p);
 }
 
+
+
+void printSharedBlocks(const mList *LM) {
+    printf("******Currently allocated segments with shared for this process: %d\n", getpid());
+    mPosL p = firstM(*LM);
+    while (p!=NULL){
+        if(p->dataM.type==SHARED){
+            key_t key1= p->dataM.key;
+            int *mem=ObtenerMemoriaShmget(key1,p->dataM.size);
+            printf(" \t\t 0x%lx\t\t\t\t", (uintptr_t)&mem);
+            printf("%ld",p->dataM.size);
+            time_t t = p->dataM.time;
+            struct tm tm = *localtime(&t);
+            printf(" %d-%02d-%02d %02d:%02d:%02d\t\t", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+            printf("shared (key %d)\n",p->dataM.key);
+        }
+        p=p->nextM;
+    }
+}
+
+void SharedDelkey(char **args) /*arg[0] points to a str containing the key*/
+{
+    key_t clave;
+    int id;
+    char *key=args[0];
+
+    if (key==NULL || (clave=(key_t) strtoul(key,NULL,10))==IPC_PRIVATE){
+        printf (" shared -delkey clave_valida\n");
+        return;
+    }
+    if ((id=shmget(clave,0,0666))==-1){
+        perror ("shmget: imposible obtener memoria compartida\n");
+        return;
+    }
+    if (shmctl(id,IPC_RMID,NULL)==-1)
+        perror ("shmctl: imposible eliminar memoria compartida\n");
+}
+
 int shared(char *tokens[], int ntokens, mList *LM){
 
     if(ntokens==1){
-        printf("******Lista de bloques asignados shared para el proceso %d\n",getpid());
-        mPosL p = firstM(*LM);
-        while (p!=NULL){
-            if(p->dataM.type==SHARED){
-                key_t key1= p->dataM.key;
-                int *mem=ObtenerMemoriaShmget(key1,p->dataM.size);
-                printf(" \t\t 0x%lx\t\t\t\t", (uintptr_t)&mem);
-                printf("%ld",p->dataM.size);
-                time_t t = p->dataM.time;
-                struct tm tm = *localtime(&t);
-                printf(" %d-%02d-%02d %02d:%02d:%02d\t\t", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
-                printf("shared (key %d)\n",p->dataM.key);
-            }
-            p=p->nextM;
-        }
+        printSharedBlocks(LM);
 
     } else if(strcmp(tokens[1],"-create")==0){
 
@@ -211,7 +269,7 @@ int shared(char *tokens[], int ntokens, mList *LM){
 
         int *mem=ObtenerMemoriaShmget(key1,item.size);
         if(mem==NULL){
-            printf("Imposible asignar memoria compartida clave %s",tokens[1]);
+            printf("Imposible asignar memoria compartida clave %s\n",tokens[1]);
             perror(":No such file or directory");
         }else{
             item.maddres=mem;
@@ -392,18 +450,6 @@ int memoria(char *tokens[], int ntokens, mList *LM){
     return 0;
 }
 
-void recursiva (int n){
-    char automatico[4086];
-    static char estatico[4096];
-    printf ("parametro n:%d en %p\n",n,&n);
-
-    printf ("array estatico en:%p \n",estatico);
-    printf ("array automatico en %p\n",automatico);
-    n--;
-    if (n>0)
-        recursiva(n);
-}
-
 int volcarmem(char *tokens[], int ntokens){
     if(ntokens==2){
         unsigned char* addres;
@@ -417,7 +463,7 @@ int volcarmem(char *tokens[], int ntokens){
         for(int i=0;i<25;i++){
             unsigned char st=*addres;
             int x= (int)st;
-            if(x<32||x>126){
+            if((x<32)||(x>126)){
                 printf("%3c\t", 32);
             } else{
                 printf("%3c\t", x);
@@ -443,7 +489,7 @@ int volcarmem(char *tokens[], int ntokens){
             if(i%30==1){
                 printf("\n");
             }
-            if(x<32|x>126){
+            if((x<32)|(x>126)){
                 printf("%3c\t", 32);
             } else{
                 printf("%3c\t", x);
@@ -472,10 +518,8 @@ return p;
 
 void Mmap (char *arg[], mList *LM){
     char *perm;
-    void *p;
     int protection=0;
-    if (arg[1]==NULL)
-    {
+    if (arg[1]==NULL){
          printf("******Lista de bloques asignados con mmap para el proceso %d\n",getpid());
         mPosL p = firstM(*LM);
         while (p!=NULL){
@@ -496,10 +540,10 @@ void Mmap (char *arg[], mList *LM){
     if (strchr(perm,'w')!=NULL) protection|=PROT_WRITE;
     if (strchr(perm,'x')!=NULL) protection|=PROT_EXEC;
     }
-    if ((p=MmapFichero(arg[0],protection))==NULL)
+    if ((p=MmapFichero(arg[1],protection))==NULL)
         perror("Imposible mapear fichero");
     else
-        printf("fichero %s mapeado en %p\n", arg[0], p);
+        printf("fichero %s mapeado en %p\n", arg[1], p);
     }
 }
 
@@ -526,7 +570,149 @@ ssize_t LeerFichero (char *fich, void *p, ssize_t n){
 }
 
 int mmapimpl(char* tokens[], int ntokens, mList *LM){
-    Mmap(tokens, LM);
+    if(!strcmp(tokens[1],"-free")){
+        //mmap -free fich
+        bool found = false;
+        unmapMmap(LM, found);
+    }else{
+        //mmap fich with or without perms
+
+        if(!access(tokens[1],F_OK)) {
+            Mmap(tokens, LM);
+        }else{
+            perror(strcat("can't find file ",tokens[1]));
+        }
+    }
+
     return 0; 
 }
 
+void unmapMmap(mList *LM, bool found) {
+    mPosL p = firstM(*LM);
+    while (p!=NULL){
+        if(p->dataM.type==MMAP){
+            munmap(p->dataM.maddres,p->dataM.size);
+            found = true;
+        };
+
+        p=p->nextM;
+    }
+    if(!found){
+        printMmapBlocks(LM);
+    }
+}
+
+void unmapMmapByFich(mList *LM, char *fich) {
+    bool found = false;
+    mPosL p = firstM(*LM);
+    while (p!=NULL){
+        if(strcmp(p->dataM.filename,fich)){
+            munmap(p->dataM.maddres,p->dataM.size);
+            found = true;
+        };
+        p=p->nextM;
+    }
+    if(!found){
+        perror("List item not found!");
+    }
+
+}
+
+
+
+void deleteOnListByAddress(mList *LM, size_t addr) {
+    bool found = false;
+    mPosL p = firstM(*LM);
+    while(p!=NULL){
+        if(p->dataM.maddres == addr){
+            found = true;
+            switch (p->dataM.type) {
+                case MALLOC:
+                    free(p->dataM.maddres);
+                    break;
+                case MMAP:
+                    munmap(p->dataM.maddres,p->dataM.size);
+                    break;
+                case SHARED:
+                    SharedDelkey(p->dataM.key);
+                    break;
+            }
+        }
+    }
+    if(!found){
+        perror("List item not found");
+    }
+}
+
+void deleteOnListByAddress(mList *LM, size_t addr);
+
+int llenarmem(char *tokens[], int ntokens){
+    size_t cont=128;
+    int byte = 0x42;
+    if(ntokens==2){
+        memset(tokens[1],byte,cont);
+    } else{
+        if(ntokens==3){
+            cont=atoi(tokens[2]);
+            memset(tokens[1],byte,cont);
+        } else if(ntokens==4){
+            cont=atoi(tokens[2]);
+            byte= atoi(tokens[3]);
+            memset(tokens[1],byte,cont);
+        }
+    }
+    return 0;
+}
+
+int recursivar (int n){
+    char automatico[4086];
+    static char estatico[4096];
+    printf ("parametro n:%d en %p\n",n,&n);
+    printf ("array estatico en:%p \n",estatico);
+    printf ("array automatico en %p\n",automatico);
+    n--;
+    if (n>0)
+        recursivar(n);
+    return 0;
+}
+int recursiva(char *tokens[], int ntokens){
+    recursivar(atoi(tokens[1]));
+    return 0;
+}
+int e_s(char *tokens[], int ntokens){
+    ssize_t cont;
+    if(ntokens>2){
+        if(strcmp(tokens[1],"read")==0){
+            if(ntokens<4){
+                cont=-1;
+            }else{
+                cont=atoi(tokens[4]);
+            }
+            printf("leidos %zd bytes de %s\n",LeerFichero(tokens[2],tokens[3],cont),tokens[2]);
+        }else{
+
+            if(strcmp(tokens[1],"write")==0) {
+                if (strcmp(tokens[2], "-o") == 0) {
+                    cont = atoi(tokens[5]);
+                    int fichero;
+                    fichero = open(tokens[3], O_WRONLY);
+                    if(fichero==-1){
+                        fichero = open(tokens[3],O_CREAT);
+                    }
+                    printf("escritos %zd bytes en %s desde %s\n", write(fichero, tokens[4], cont), tokens[3],tokens[4]);
+                } else {
+                    cont = atoi(tokens[4]);
+                    int fichero;
+                    fichero = open(tokens[2], O_WRONLY);
+                    if(fichero == -1){
+                        fichero = open(tokens[3],O_CREAT);
+                        printf("escritos %zd bytes en %s desde %s\n", write(fichero, tokens[3], cont), tokens[2],tokens[3]);
+                    }else{
+                        printf("Imposible escribir fichero:File exists\n");
+                    }
+                }
+            }
+        }
+    }
+    return 0;
+}
