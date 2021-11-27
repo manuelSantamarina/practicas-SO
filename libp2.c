@@ -40,20 +40,20 @@ void printMallocBlocks(mList const *LM) {
 }
 void printMmapBlocks(mList const *LM) {
     printf("Currently allocated segments with mmap for this process:\n");
-    mPosL p = firstM(*LM);
-    while (p!=NULL){
-        if(p->dataM.type==MMAP){
-            //Se cogen movidos
-            addres mem = p->dataM.maddres;
-            printf(" \t\t 0x%lx\t\t\t\t", (uintptr_t)&mem);
-            printf("%ld",p->dataM.size);
-            time_t t = p->dataM.time;
-            struct tm tm = *localtime(&t);
-            printf(" %d-%02d-%02d %02d:%02d:%02d\t\t", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
-            printf("malloc\n");
+        mPosL p = firstM(*LM);
+        while (p!=NULL){
+            if(p->dataM.type==MMAP){
+                //Se cogen movidos
+                addres mem = p->dataM.maddres;
+                printf(" \t\t 0x%lx\t\t\t\t", (uintptr_t)&mem);
+                printf("%ld",p->dataM.size);
+                time_t t = p->dataM.time;
+                struct tm tm = *localtime(&t);
+                printf(" %d-%02d-%02d %02d:%02d:%02d\t\t", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+                printf("malloc\n");
+            }
+            p=p->nextM;
         }
-        p=p->nextM;
-    }
 }
 void printSharedBlocks(mList const *LM);
 void SharedDelkey (char *args[]);
@@ -570,19 +570,23 @@ ssize_t LeerFichero (char *fich, void *p, ssize_t n){
 }
 
 int mmapimpl(char* tokens[], int ntokens, mList *LM){
-    if(!strcmp(tokens[1],"-free")){
-        //mmap -free fich
-        bool found = false;
-        unmapMmap(LM, found);
-    }else{
-        //mmap fich with or without perms
-
-        if(!access(tokens[1],F_OK)) {
-            Mmap(tokens, LM);
+    if(ntokens > 1){
+        if(!strcmp(tokens[1],"-free")){
+            //mmap -free fich
+            bool found = false;
+            unmapMmap(LM, found);
         }else{
-            perror(strcat("can't find file ",tokens[1]));
+            //mmap fich with or without perms
+            if(!access(tokens[1],F_OK)) {
+                Mmap(tokens, LM);
+            }else{
+                perror(strcat("can't find file ",tokens[1]));
+            }
         }
+    }else{
+        printMmapBlocks(LM);
     }
+
 
     return 0; 
 }
@@ -594,7 +598,6 @@ void unmapMmap(mList *LM, bool found) {
             munmap(p->dataM.maddres,p->dataM.size);
             found = true;
         };
-
         p=p->nextM;
     }
     if(!found){
@@ -606,7 +609,7 @@ void unmapMmapByFich(mList *LM, char *fich) {
     bool found = false;
     mPosL p = firstM(*LM);
     while (p!=NULL){
-        if(strcmp(p->dataM.filename,fich)){
+        if(strcmp(p->dataM.filename,*fich)){
             munmap(p->dataM.maddres,p->dataM.size);
             found = true;
         };

@@ -1,0 +1,1 @@
+/usr/bin/cc -g CMakeFiles/practicas_SO.dir/debug_utils.c.o CMakeFiles/practicas_SO.dir/dynamic_list.c.o CMakeFiles/practicas_SO.dir/libp2.c.o CMakeFiles/practicas_SO.dir/memorylist.c.o CMakeFiles/practicas_SO.dir/p0.c.o -o practicas_SO 
