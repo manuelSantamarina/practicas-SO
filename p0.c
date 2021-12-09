@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include "dynamic_list.c"
+#include "common_utils.c"
 #include <pwd.h>
 #include <grp.h>
 
@@ -38,14 +39,6 @@ int listdir(char *tokens[], int ntokens);
 bool escarpeta(char *name);
 
 
-void debug(char string[]){
-    printf("%s\n",string);
-    fflush(stdout);
-}
-void debug_int(int integer){
-    printf("%d\n",integer);
-    fflush(stdout);
-}
 void imprimirPrompt(){
     char name[32];
     char cwd[100] = "current working directory";
@@ -226,14 +219,6 @@ char * ConvierteModo2 (mode_t m){
     if (m&S_ISGID) permisos[6]='s';
     if (m&S_ISVTX) permisos[9]='t';
     return (permisos);
-}
-
-int isOption(char *token){
-    if(token[0] == '-'){
-        return 1;
-    }else{
-        return 0;
-    }
 }
 
 int listfich(char *tokens[], int ntokens){

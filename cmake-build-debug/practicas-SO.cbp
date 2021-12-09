@@ -78,6 +78,12 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="/home/groug/udc/so/practicas-SO/common_utils.c">
+			<Option target="SO"/>
+		</Unit>
+		<Unit filename="/home/groug/udc/so/practicas-SO/libp3.c">
+			<Option target="SO"/>
+		</Unit>
 		<Unit filename="/home/groug/udc/so/practicas-SO/p0.c">
 			<Option target="SO"/>
 		</Unit>
