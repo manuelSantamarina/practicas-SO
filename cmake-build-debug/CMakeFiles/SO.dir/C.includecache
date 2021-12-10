@@ -6,6 +6,8 @@
 
 #IncludeRegexTransform: 
 
+/home/groug/udc/so/practicas-SO/common_utils.h
+
 /home/groug/udc/so/practicas-SO/dynamic_list.c
 dynamic_list.h
 /home/groug/udc/so/practicas-SO/dynamic_list.h
@@ -25,11 +27,7 @@ stddef.h
 -
 
 /home/groug/udc/so/practicas-SO/libp2.c
-stdio.h
--
 stdlib.h
--
-sys/types.h
 -
 sys/shm.h
 -
@@ -43,9 +41,29 @@ sys/shm.h
 -
 sys/wait.h
 -
-sys/mman.h
+string.h
 -
-time.h
+sys/stat.h
+-
+fcntl.h
+-
+
+/home/groug/udc/so/practicas-SO/libp3.c
+stdlib.h
+-
+stdio.h
+-
+sys/shm.h
+-
+errno.h
+-
+stdint.h
+-
+sys/shm.h
+-
+sys/wait.h
+-
+string.h
 -
 sys/stat.h
 -
@@ -53,6 +71,12 @@ fcntl.h
 -
 unistd.h
 -
+sys/resource.h
+-
+ctype.h
+-
+common_utils.h
+/home/groug/udc/so/practicas-SO/common_utils.h
 
 /home/groug/udc/so/practicas-SO/memorylist.c
 memorylist.h
@@ -71,10 +95,10 @@ stdbool.h
 -
 stddef.h
 -
-bits/types/time_t.h
--
 
 /home/groug/udc/so/practicas-SO/p0.c
+common_utils.h
+/home/groug/udc/so/practicas-SO/common_utils.h
 string.h
 -
 stdio.h
@@ -93,10 +117,22 @@ dirent.h
 -
 dynamic_list.c
 /home/groug/udc/so/practicas-SO/dynamic_list.c
+processlist.h
+/home/groug/udc/so/practicas-SO/processlist.h
 pwd.h
 -
 grp.h
 -
 libp2.c
 /home/groug/udc/so/practicas-SO/libp2.c
+libp3.c
+/home/groug/udc/so/practicas-SO/libp3.c
+
+/home/groug/udc/so/practicas-SO/processlist.h
+stdbool.h
+-
+stddef.h
+-
+bits/types/time_t.h
+-
 

@@ -79,9 +79,22 @@ CMakeFiles/SO.dir/p0.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/SO.dir/p0.c.s"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/groug/udc/so/practicas-SO/p0.c -o CMakeFiles/SO.dir/p0.c.s
 
+CMakeFiles/SO.dir/processlist.c.o: CMakeFiles/SO.dir/flags.make
+CMakeFiles/SO.dir/processlist.c.o: ../processlist.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/groug/udc/so/practicas-SO/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/SO.dir/processlist.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/SO.dir/processlist.c.o -c /home/groug/udc/so/practicas-SO/processlist.c
+
+CMakeFiles/SO.dir/processlist.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/SO.dir/processlist.c.i"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/groug/udc/so/practicas-SO/processlist.c > CMakeFiles/SO.dir/processlist.c.i
+
+CMakeFiles/SO.dir/processlist.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/SO.dir/processlist.c.s"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/groug/udc/so/practicas-SO/processlist.c -o CMakeFiles/SO.dir/processlist.c.s
+
 CMakeFiles/SO.dir/common_utils.c.o: CMakeFiles/SO.dir/flags.make
 CMakeFiles/SO.dir/common_utils.c.o: ../common_utils.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/groug/udc/so/practicas-SO/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/SO.dir/common_utils.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/groug/udc/so/practicas-SO/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/SO.dir/common_utils.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/SO.dir/common_utils.c.o -c /home/groug/udc/so/practicas-SO/common_utils.c
 
 CMakeFiles/SO.dir/common_utils.c.i: cmake_force
@@ -92,31 +105,18 @@ CMakeFiles/SO.dir/common_utils.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/SO.dir/common_utils.c.s"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/groug/udc/so/practicas-SO/common_utils.c -o CMakeFiles/SO.dir/common_utils.c.s
 
-CMakeFiles/SO.dir/libp3.c.o: CMakeFiles/SO.dir/flags.make
-CMakeFiles/SO.dir/libp3.c.o: ../libp3.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/groug/udc/so/practicas-SO/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/SO.dir/libp3.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/SO.dir/libp3.c.o -c /home/groug/udc/so/practicas-SO/libp3.c
-
-CMakeFiles/SO.dir/libp3.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/SO.dir/libp3.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/groug/udc/so/practicas-SO/libp3.c > CMakeFiles/SO.dir/libp3.c.i
-
-CMakeFiles/SO.dir/libp3.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/SO.dir/libp3.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/groug/udc/so/practicas-SO/libp3.c -o CMakeFiles/SO.dir/libp3.c.s
-
 # Object files for target SO
 SO_OBJECTS = \
 "CMakeFiles/SO.dir/p0.c.o" \
-"CMakeFiles/SO.dir/common_utils.c.o" \
-"CMakeFiles/SO.dir/libp3.c.o"
+"CMakeFiles/SO.dir/processlist.c.o" \
+"CMakeFiles/SO.dir/common_utils.c.o"
 
 # External object files for target SO
 SO_EXTERNAL_OBJECTS =
 
 SO: CMakeFiles/SO.dir/p0.c.o
+SO: CMakeFiles/SO.dir/processlist.c.o
 SO: CMakeFiles/SO.dir/common_utils.c.o
-SO: CMakeFiles/SO.dir/libp3.c.o
 SO: CMakeFiles/SO.dir/build.make
 SO: CMakeFiles/SO.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/groug/udc/so/practicas-SO/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking C executable SO"

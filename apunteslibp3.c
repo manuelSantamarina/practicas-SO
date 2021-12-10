@@ -1,2 +1,0 @@
-//fork 
-fork y waitpid

@@ -2,6 +2,10 @@
 // Created by groug on 9/12/21.
 //
 #include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
+
 int isOption(char *token){
     if(token[0] == '-'){
         return 1;
@@ -10,8 +14,17 @@ int isOption(char *token){
     }
 }
 
-int startsWith(char *argument, char token){
-    if(argument[0] == token){
+/*int startsWith(char token, char *argument){
+    if(strcmp(token,argument[0])){
+        return 1;
+    }else{
+        return 0;
+    }
+}*/
+int isPriority(char* token){
+
+    if(isdigit(token) &&
+       atoi(token) >= -20 && atoi(token) <= 19){
         return 1;
     }else{
         return 0;

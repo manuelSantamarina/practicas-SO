@@ -1,4 +1,4 @@
-#define _DEFAULT_SOURCE
+#include "common_utils.h"C
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,11 +8,11 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include "dynamic_list.c"
-#include "common_utils.c"
+#include "processlist.h"
 #include <pwd.h>
 #include <grp.h>
-
 #include "libp2.c"
+#include "libp3.c"
 
 //Autores
 /*  Manuel Santamariña Ruiz de León (manuel.santamarina)
@@ -30,7 +30,7 @@
 
 int ayuda(char *tokens[], int ntokens);
 int hist(char *tokens[],int ntokens, tList *L,mList *LM);
-int comando(char *tokens[],int ntokens,tList *L,mList *LM);
+int comando(char *tokens[],int ntokens,tList *L,mList *LM, char *argv[], char * envp[],pList *LP);
 int crear(char *tokens[], int ntokens);
 int borrar(char *tokens[], int ntokens);
 int borrarrec(char *tokens[], int ntokens);
@@ -38,14 +38,13 @@ int listfich(char *tokens[], int ntokens);
 int listdir(char *tokens[], int ntokens);
 bool escarpeta(char *name);
 
-
 void imprimirPrompt(){
     char name[32];
     char cwd[100] = "current working directory";
     getcwd(cwd, 100);
 
     gethostname(name,32);
-    printf("@%s:%s$ ",name,cwd);
+    printf("%s@%s:%s$ ",getlogin(),name,cwd);
 }
 int parseString(char * cadena, char * trozos[]) {
     int i=1;
@@ -149,7 +148,6 @@ struct cmd {
 
 struct cmd cmds[] = {
         //help format: "Usage: <command usage>\n<cmd-description>\n\nOptions:\n<option>\t<noption-text>"
-    //P0
         {"autores", autores, "Usage: autores [-l|-n]\nPrints the names and logins of the program authors.\n\nOptions:\n-l\tPrint only the logins\n-n\tPrint only the names"},
         {"pid", pid,"Usage: pid [-p]\nPrints the pid of the process executing the shell.\n\nOptions:\n-p\tPrints the pid of the shell's parent process"},
         {"carpeta", carpeta,"Usage: carpeta [direct]\nChanges the current working directory of the shell to \"direct\" (using the \"chdir\" system call). When invoked without arguments it prints the current working directory (using the \"getcwd\" system call)."},
@@ -160,23 +158,29 @@ struct cmd cmds[] = {
         {"bye",quit,"Usage: bye\nEnds the shell"},
         {"ayuda", ayuda,"Usage: ayuda [cmd]\n\"ayuda\" displays a list of available commands. \"ayuda cmd\" gives a brief help on the usage of command \"cmd\""},
         {"hist", hist, "Usage: hist [-c | N]\nShows/clears the \"historic\" of commands executed by this shell. In order to do this, a list to store all the commands input to the shell must be implemented.\n\nOptions:\n-c\t Clear the historic\n-N\tPrints the first N commands"},
-    //P1
         {"crear",crear,"Usage: crear [-f] name\nC Creates a file or directory in the file system. name is the name of the file (or directory) to be created. If no option is specified, a directory will be created. If name is not given, the name of the current working directory will be printed.\n\nOptions:\n-f\tIf specified, an empty directory is to be created."},
         {"borrar",borrar,"Usage: borrar name1 name2 ...\nDeletes files and/or empty directories. If no name is given, the current working directory will be printed."},
         {"borrarrec",borrarrec,"Usage: borrarrec name1 name2 ...\nDeletes files and/or non empty directories with all of their content. If no name is given, the current working directory will be printed"},
         {"listfich",listfich,"Usage: listfich [-long] [-link] [-acc] name1 name2 name3 ...\nGives info on files (or directories, or devices ... ) name1, name2 ... in one line per file. If no options are given, it prints the size and the name of each file. If no name is given, the name current working directory will be printed (as with the carpeta command)\n\nOptions:\n-long\tLong listing.it will print out the date of last modification (in format YYYY/MM/DD-HH:mm), number of links, owner, group, mode (drwx format), size and name of the file. If any of the names is a directory, information on the directory file itsself will be printed. The format to be used is: date number of links (inode number) owner group mode size name\n\n-link\t-link is only meaningful for long listings: if the file is a symbolic link the name of the file it points to is also printed. Format: date number of links (inode number) owner group mode size name->file the link points to.\n\n-acc\tLast access time will be used instead of last modification time."},
         {"listdir",listdir,"Usage: listdir [-reca] [-recb] [-hid] [-long] [-link] [-acc] name1 name2 ...\nLists the contents of directories with names name1, name2 ...  If any of name1, name2 . . . is not a directory, info on it will be printed EXACTLY as with command listfich. If no name is given, the name of the current working directory will be printed (as with the carpeta command).\n\nOptions:\n-long\tLong listing.it will print out the date of last modification (in format YYYY/MM/DD-HH:mm), number of links, owner, group, mode (drwx format), size and name of the file. If any of the names is a directory, information on the directory file itsself will be printed. The format to be used is: date number of links (inode number) owner group mode size name\n\n-link\t-link is only meaningful for long listings: if the file is a symbolic link the name of the file it points to is also printed. Format: date number of links (inode number) owner group mode size name->file the link points to.\n\n-acc\tLast access time will be used instead of last modification time.\n-long\tLong listing.it will print out the date of last modification (in format YYYY/MM/DD-HH:mm), number of links, owner, group, mode (drwx format), size and name of the file. If any of the names is a directory, information on the directory file itsself will be printed. The format to be used is: date number of links (inode number) owner group mode size name\n\n-link\t-link is only meaningful for long listings: if the file is a symbolic link the name of the file it points to is also printed. Format: date number of links (inode number) owner group mode size name->file the link points to.\n\n-acc\tLast access time will be used instead of last modification time.\n-reca\tWhen listing a directory's contents, subdirectories will be listed recursively BEFORE all the files in the directory. (if the -hid option is also given, hidden subdirectories will also get listed, except . and .. to avoid infinite recursion"},
         {"comando", comando, "Usage: comando N\n Repeats command number N (from historic list).\n"},
-    //P2
         {"malloc",mallocimpl,"Usage: malloc [-free] [tam]\n The shell allocates tam bytes using malloc and shows the memory address returned by malloc. This address, together with tam and the time of the allocation, must be kept in the aforementioned list. If tam is not specified the command will show the list of addresses allocated with the malloc command. malloc() requires an argument of size_t.\n\nOptions: -free: \tDeallocates one of the blocks of size tam that has been allocated with the command malloc. If no such block exists or if tam is not specified, the command will show the list of addresses allocated with the malloc command. Should there be more than one block of size tam it deallocates ONLY one of them(any)."},
-        {"dealloc",deallocimpl,"Usage: dealloc [-malloc|-shared|-mmap]...\nDeallocates one of the memory blocks allocated with the command malloc, mmap or shared and removes it from the list. If no arguments are given, it prints a list of the allocated memory blocks (that is, prints the list).\n\nOptions:\n-malloc size\t Does exactly the same as malloc -free size.\ndealloc -shared cl\tDoes exactly the same as shared -free cl\ndealloc -mmap file\tDoes exactly the same as mmap -free file.\ndealloc addr\tDeallocates addr( it searches in the list how it was allocated, and proceeds accordingly) and removes it from the list. If addr is not in the list or if addr is not supplied the command will show all the addresses (and size, and time...) allocated with the malloc, mmap, shared commands. This does the same (albeit with a different parameter) as malloc -free, shared -free or mmap-free deppending on addr."},
-        {"shared",shared,"\"Usage: shared [-free|-create|-delkey] cl [tam]\\nGets shared memory of key cl, maps it in the process' address space and shows the memory address where the shared memory has been mapped. That address, together with the key, the size of the shared memory block and the time of the mapping will be stored in the aforemetioned list. cl IS THE KEY, (ftok should not be used). Parameter tam is only used when creating a new block of shared memory. if -create is not given, it is assumed that key cl is in use in the system so a new block of shared memory SHOULD NOT BE CREATED, and an error must be reported if a block of key cl does not exist. If no cl is specified, the command will show the list of addresses (and size, and time...) allocated with the shared command. (shared memory blocks can be of size_t sizeE). The memory should be obtained with shmget, not searched for in the list.\\n\\nOptions:\\n-create cl tam\\tCreates a shared memory block of key cl, and size tam, maps it in the process address space and shows the memory address where the shared memory has been mapped. That address, together with the key, the size of the shared memory block and the time of the mapping, will be stored in the aforementioned list.\\n-free cl\\tDetaches the shared memory block with key cl from the process' address space and eliminates its address from the list. If shared memory block with key cl has been attached several times, ONLY one of them is detached. cl IS THE KEY, ftok should not be used. If cl is not specified, the command will show the list of addressed (and size, and time ...) allocated with the shared command.\\n-delkey cl\\t Removes the shared memory region of key cl, nothing gets unmapped: this is just a call to shmctl(id, IPC_RMID...)"},
-        {"memoria",memoria,"\"Usage: memoria [-blocks][-vars][-funcs][-all][-pmap] Shows addresses inside the process memory space. If not arguments are given, is equivalent to all.\\n\\nOptions:\\n-blocks\\tShows the list of addresses (and size, and time...)allocated with the malloc, shared and mmap.\\n-vars\\t Prints the memory addresses of nine variables of the shell: three exernal (global) initialized variables, three static initialized and three automatic (local) initialized variables.\\n-funcs\\tPrints the memory addresses of three program functions of the shell and three C library functions used in the shell program\\n-all\\tDoes the equivalent to -blocks, -vars and -funcs together.\\n-pmap\\tCalls the program pmap for the shell process (sample ode is given in the clues section)."},
-        {"recursiva",recursiva,"Usage: recursiva n\nCalls a recursive function passing the integer n as its parameter. This recursive function receives the number of times it has to call itself. This function has two variables: an automatic array of 4096 bytes and a static array of the same size. It does the following:\n\n\t-prints the value of the received parameter as well as its memory address\n\t-prints the address of the static array.\n\t-prints the address of the automatic array.\n\tdecrements n(its parameter) and if n is greater than 0 it calls itself."},
-        {"volcarmem",volcarmem,"Usage: volcarmem addr [cont]\nShows the contents of cont bytes starting at memory address addr. If cont is not specified, it shows 25 btes. For each byte it prints (at different lines) its hex value and its associated char (a blank if it is a non-printable character). It prints 25 bytes per line. addr SHOULD NOT BE CHECKED FOR VALIDITY, so, this command could produce segmentation fault should addr were not valid."},
-        {"mmap", mmapimpl, "Usage: mmap [-free] fich [perm]\nMaps in memory the file fich (all of its length starting at offset 0) and shows the memory address where the file has been mapped. perm represents the mapping permissions (rwx format, without spaces). The address of the mapping, together with the size, the name of the file, the file descriptor, and the time of the mapping will be stored in the aforementioned list. If fich is not specified, the command will show the list of addresses allocated with the mmap command.\n\nOptions: -free\tUnmaps and closes the file fich and removes the address where it was mapped from the list. If fich has been mapped several times, only one of the mappings will be undone. If the file fich is not mapped by the process or if fich is not specified, the command will show the list of addresses (and size, and time . . . ) allocated with the mmap command."},
-        {"llenarmem",llenarmem,"Usage: llenarmem addr [cont][byte]\nFills cont bytes of memory starting at address addr with the value 'byte'. if 'byte' is not specified, the value 65 (0x42 or capital A) is assumed, and if cont is not specified, we'll use a default value of 128. Addr SHOULD NOT BE CHECKED FOR VALIDITY, so, this command could produce segmentation fault should addr were not valid."},
-        {"e-s",e_s,"Usage: read fich addr cont\nReads (using ONE read system call) cont bytes from file fich into memory address addr. If cont is not specified ALL of fich is read onto memory address addr. Depending on the value of addr a segmentation fault could be produced. \n\ne-s,write[-o] fich addr cont\nWrites (using ONE write system call) cont bytes from memory address addr into file fich. If file fich does not exist it gets created; if it already exists it is not overwritten unless \"-o\" (overwrite) is specified."},
+        {"shared",shared,"shared: ...\n"},
+        {"memoria",memoria,"memoria: ...\n"},
+        {"volcarmem",volcarmem,"volcarmem: ...\n"},
+        {"llenarmem",llenarmem,"llenarmem: ...\n"},
+        {"recursiva",recursiva,"recursiva: ...\n"},
+        {"e-s",e_s,"e-s: ...\n"},
+        {"priority",priority,"priority: ...\n"},
+        {"rederr",rederr,"rederr: ...\n"},
+        {"entorno",entorno,"entorno: ...\n"},
+        {"mostrarvar",mostrarvar,"mostrarvar: ...\n"},
+        {"cambiarvar",cambiarvar,"cambiarvar: ...\n"},
+        {"uid",uid,"uid: ...\n"},
+        {"listjobs",listjobs,"listjobs: ...\n"},
+        {"job",job,"job: ...\n"},
+        {"borrarjobs",borrarjobs,"borrarjobs: ...\n"},
+        {"ejec",ejec,"execvp: ...\n"},
         {NULL, NULL}
 };
 char* getLastSegmentFromPath(char path[]){
@@ -654,14 +658,13 @@ int listdir(char *tokens[],int ntokens){
                     }
                 }
             }
-
         }
     }
     return 0;
 }
 
 //si quiero insertar al final inserto en 0
-int processCmd(char *tokens[], int ntokens, tList *L,mList *LM) {
+int processCmd(char *tokens[], int ntokens, tList *L,mList *LM,char *arg[],char *env[],pList *LP) {
     int i;
     tItemL item;
     strcpy(item.command,tokens[0]);
@@ -678,32 +681,31 @@ int processCmd(char *tokens[], int ntokens, tList *L,mList *LM) {
         }
         if(strcmp(tokens[0], "comando")==0){
             if(ntokens==2){
-                comando(tokens,ntokens,L,LM);
+                comando(tokens,ntokens,L,LM,arg,env,LP);
             }else{
                 printf("comando no reconocido\n");
             }
-
             return 0;
         }
-        if(strcmp(tokens[0], cmds[i].cmd_name) ==0){
 
+        if(strcmp(tokens[0], cmds[i].cmd_name) ==0){
             insertItem(item, NULL,L);
-            if(
-            strcmp(tokens[0], "shared")==0
-            ||strcmp(tokens[0], "memoria")==0
-            ||strcmp(tokens[0],"malloc")==0
-              ||strcmp(tokens[0],"dealloc")==0
-            ){
+            if(strcmp(tokens[0], "entorno")==0||strcmp(tokens[0], "mostrarvar")==0||strcmp(tokens[0], "cambiarvar")==0){
+                return cmds[i].cmd_fun(tokens, ntokens,arg,env);
+            }
+            if(strcmp(tokens[0], "listjobs")==0||strcmp(tokens[0], "job")==0||strcmp(tokens[0], "borrarjobs")==0){
+                return cmds[i].cmd_fun(tokens, ntokens,LP);
+            }
+            if(strcmp(tokens[0], "shared")==0||strcmp(tokens[0], "memoria")==0){
                 return cmds[i].cmd_fun(tokens, ntokens,LM);
             }
             return cmds[i].cmd_fun(tokens, ntokens);
         }
     }
-    printf("Comando no reconocido\n");
+    perror("Comando no reconocido\n");
     return 0;
 }
-
-int comando(char *tokens[],int ntokens,tList *L,mList *LM){
+int comando(char *tokens[],int ntokens,tList *L,mList *LM,char *argv[], char * envp[],pList *LP){
     int n;
     char *tr[MAX_TOKENS];
     tItemL item;
@@ -722,17 +724,17 @@ int comando(char *tokens[],int ntokens,tList *L,mList *LM){
         strcat(comd," ");
         strcat(comd,par);
         n= parseString(comd,tr);
-        processCmd( tr, n, L, LM);
+        processCmd( tr, n, L, LM,argv,envp,LP);
 
         return 1;
     }else{
         n=parseString(comd,tr);
-        processCmd(tr, n, L, LM);
+        processCmd(tr, n, L, LM,argv,envp,LP);
         return 1;
     }
 }
 
-int main(){
+int main(int argc, char *argv[], char * envp[]){
     char line[MAX_LINE];
     char *tokens[MAX_TOKENS];
     int ntokens;
@@ -742,13 +744,16 @@ int main(){
     createEmptyList(&L);
     mList LM;
     createEmptyListM(&LM);
+    pList LP;
+    createEmptyListP(&LP);
 
     while(!end) {
         imprimirPrompt();
         fgets(line,MAX_LINE,stdin);
         ntokens = parseString(line, tokens);
-        end = processCmd(tokens, ntokens, &L,&LM);
+        end = processCmd(tokens, ntokens, &L,&LM,argv,envp,&LP);
 
     }
     return 0;
 }
+

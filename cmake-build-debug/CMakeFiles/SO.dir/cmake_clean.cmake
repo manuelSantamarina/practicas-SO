@@ -1,7 +1,7 @@
 file(REMOVE_RECURSE
   "CMakeFiles/SO.dir/common_utils.c.o"
-  "CMakeFiles/SO.dir/libp3.c.o"
   "CMakeFiles/SO.dir/p0.c.o"
+  "CMakeFiles/SO.dir/processlist.c.o"
   "SO"
   "SO.pdb"
 )
