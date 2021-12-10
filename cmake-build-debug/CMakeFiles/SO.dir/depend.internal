@@ -3,7 +3,7 @@
 
 CMakeFiles/SO.dir/common_utils.c.o
  /home/groug/udc/so/practicas-SO/common_utils.c
-CMakeFiles/SO.dir/p0.c.o
+CMakeFiles/SO.dir/p3.c.o
  /home/groug/udc/so/practicas-SO/common_utils.h
  /home/groug/udc/so/practicas-SO/dynamic_list.c
  /home/groug/udc/so/practicas-SO/dynamic_list.h
@@ -11,7 +11,7 @@ CMakeFiles/SO.dir/p0.c.o
  /home/groug/udc/so/practicas-SO/libp3.c
  /home/groug/udc/so/practicas-SO/memorylist.c
  /home/groug/udc/so/practicas-SO/memorylist.h
- /home/groug/udc/so/practicas-SO/p0.c
+ /home/groug/udc/so/practicas-SO/p3.c
  /home/groug/udc/so/practicas-SO/processlist.h
 CMakeFiles/SO.dir/processlist.c.o
  /home/groug/udc/so/practicas-SO/processlist.c

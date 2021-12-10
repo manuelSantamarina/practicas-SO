@@ -10,9 +10,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/resource.h>
-#include <ctype.h>>
+#include <ctype.h>
 #include "common_utils.h"
-
 #define MAXVAR 1024
 
 void MostrarEntorno (char **entorno, char * nombre_entorno){
@@ -427,7 +426,7 @@ int _fork(char tokens[], int ntokens){
 }
 //ejecutar sin crear proceso
 //
-int ejec(const char* tokens[], int ntokens){
+int ejec(char *tokens[], int ntokens){
     /*ejec prog arg1 arg2:
     Ejecuta sin crear un proceso nuevo... 
     ntokens: 1...n
@@ -438,7 +437,7 @@ int ejec(const char* tokens[], int ntokens){
         //we return an int value of -1 to signify that it failed
         return -1;
     }else{
-        if(isPriority((char *const) tokens[1])){
+        if(isPriority(tokens[1])){
             //Contiene un argumento de prioridad, lo cual quiere decir
             //que hay que cambiar la prioridad antes de ejecutar
             priority((char**)tokens[1], 1);
@@ -464,24 +463,44 @@ int ejec(const char* tokens[], int ntokens){
 
 int ejecpri(char* tokens[], int ntokens){
     //Ejecutamos ejec con los tokens de 1 a n
-
+    //Creamos un bundle nuevo para llamar a ejec con los argumentos de ejecpri
+    char *ejec_call_tokens[10];
+    strcpy(ejec_call_tokens[0], "ejec");
+    for(int i = 2; i < ntokens;i++){
+        strcpy(ejec_call_tokens[i],tokens[i-1]);
+    }
+    if(isPriority(tokens[1])){
+        changePriority(tokens[1]);
+        ejec(ejec_call_tokens,ntokens);
+        return 0;
+    }else{
+        return -1;
+        perror("Error: does not contain a priority");
+    }
 }
 
 //Ejecuta en primer plano
 //usamos fork 
-int fg(const char *tokens[], int ntokens){
+int fg(char *tokens[], int ntokens){
     pid_t pid = getpid();
 
     //Ejecutamos fork sin parámetros extra
 
     //Si el fork nos da -1 eso quiere decir que el fork ha fallado, devolvemos 0
-    if(_fork(NULL,  0) == -1) return -1;
-    if (pid == getpid()) return 0;
-    return ejec(tokens,ntokens);
+    if(fork() == -1) return -1;
+
+    if ((pid=fork())==0){
+        if (ejec(tokens,ntokens))
+            perror ("Cannot execute");
+        exit(255); /*exec has failed for whatever reason*/
+    }
+    waitpid (pid,NULL,0);
 }
 
 //primer plano + cambiar prioridad con changePriority
-int fgpri(char tokens[], int ntokens);
+int fgpri(char tokens[], int ntokens){
+
+}
 //segundo plano
 
 int _fork_background(){
@@ -519,9 +538,15 @@ int backpri(char tokens[], int ntokens){
 //siendo ejecutada por otra que no sea el propietario
 
 //ejecutar como login
-int ejecas(char tokens[], int ntokens);
+int ejecas(char tokens[], int ntokens){
+
+}
 //ejecutar como x en primer plano
-int fgas(char tokens[], int ntokens);
+int fgas(char tokens[], int ntokens){
+
+}
 //ejecutar como x en segundo plano
-int bgas(char tokens[], int ntokens);
+int bgas(char tokens[], int ntokens){
+
+}
 

@@ -1,4 +1,4 @@
-#include "common_utils.h"C
+#include "common_utils.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -158,6 +158,7 @@ struct cmd cmds[] = {
         {"bye",quit,"Usage: bye\nEnds the shell"},
         {"ayuda", ayuda,"Usage: ayuda [cmd]\n\"ayuda\" displays a list of available commands. \"ayuda cmd\" gives a brief help on the usage of command \"cmd\""},
         {"hist", hist, "Usage: hist [-c | N]\nShows/clears the \"historic\" of commands executed by this shell. In order to do this, a list to store all the commands input to the shell must be implemented.\n\nOptions:\n-c\t Clear the historic\n-N\tPrints the first N commands"},
+        //P2
         {"crear",crear,"Usage: crear [-f] name\nC Creates a file or directory in the file system. name is the name of the file (or directory) to be created. If no option is specified, a directory will be created. If name is not given, the name of the current working directory will be printed.\n\nOptions:\n-f\tIf specified, an empty directory is to be created."},
         {"borrar",borrar,"Usage: borrar name1 name2 ...\nDeletes files and/or empty directories. If no name is given, the current working directory will be printed."},
         {"borrarrec",borrarrec,"Usage: borrarrec name1 name2 ...\nDeletes files and/or non empty directories with all of their content. If no name is given, the current working directory will be printed"},
@@ -171,6 +172,7 @@ struct cmd cmds[] = {
         {"llenarmem",llenarmem,"llenarmem: ...\n"},
         {"recursiva",recursiva,"recursiva: ...\n"},
         {"e-s",e_s,"e-s: ...\n"},
+        //P3
         {"priority",priority,"priority: ...\n"},
         {"rederr",rederr,"rederr: ...\n"},
         {"entorno",entorno,"entorno: ...\n"},
@@ -180,7 +182,16 @@ struct cmd cmds[] = {
         {"listjobs",listjobs,"listjobs: ...\n"},
         {"job",job,"job: ...\n"},
         {"borrarjobs",borrarjobs,"borrarjobs: ...\n"},
-        {"ejec",ejec,"execvp: ...\n"},
+        {"ejec",ejec,"exjec: ...\n"},
+        {"ejecpri",ejecpri,"ejecpri: ...\n"},
+        {"fork",_fork,"ejecpri: ...\n"}, //XX
+        {"fg",fg,"ejecpri: ...\n"},
+        {"fgpri",fgpri,"ejecpri: ...\n"},
+        {"back",back,"ejecpri: ...\n"},
+        {"backpri",backpri,"ejecpri: ...\n"},
+        {"fgas",fgas,"ejecpri: ...\n"},
+        {"bgas",bgas,"ejecpri: ...\n"},
+        {"ejecas",ejecas,"ejecpri: ...\n"},
         {NULL, NULL}
 };
 char* getLastSegmentFromPath(char path[]){

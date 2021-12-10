@@ -66,18 +66,18 @@ include CMakeFiles/SO.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/SO.dir/flags.make
 
-CMakeFiles/SO.dir/p0.c.o: CMakeFiles/SO.dir/flags.make
-CMakeFiles/SO.dir/p0.c.o: ../p0.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/groug/udc/so/practicas-SO/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/SO.dir/p0.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/SO.dir/p0.c.o -c /home/groug/udc/so/practicas-SO/p0.c
+CMakeFiles/SO.dir/p3.c.o: CMakeFiles/SO.dir/flags.make
+CMakeFiles/SO.dir/p3.c.o: ../p3.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/groug/udc/so/practicas-SO/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/SO.dir/p3.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/SO.dir/p3.c.o -c /home/groug/udc/so/practicas-SO/p3.c
 
-CMakeFiles/SO.dir/p0.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/SO.dir/p0.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/groug/udc/so/practicas-SO/p0.c > CMakeFiles/SO.dir/p0.c.i
+CMakeFiles/SO.dir/p3.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/SO.dir/p3.c.i"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/groug/udc/so/practicas-SO/p3.c > CMakeFiles/SO.dir/p3.c.i
 
-CMakeFiles/SO.dir/p0.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/SO.dir/p0.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/groug/udc/so/practicas-SO/p0.c -o CMakeFiles/SO.dir/p0.c.s
+CMakeFiles/SO.dir/p3.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/SO.dir/p3.c.s"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/groug/udc/so/practicas-SO/p3.c -o CMakeFiles/SO.dir/p3.c.s
 
 CMakeFiles/SO.dir/processlist.c.o: CMakeFiles/SO.dir/flags.make
 CMakeFiles/SO.dir/processlist.c.o: ../processlist.c
@@ -107,14 +107,14 @@ CMakeFiles/SO.dir/common_utils.c.s: cmake_force
 
 # Object files for target SO
 SO_OBJECTS = \
-"CMakeFiles/SO.dir/p0.c.o" \
+"CMakeFiles/SO.dir/p3.c.o" \
 "CMakeFiles/SO.dir/processlist.c.o" \
 "CMakeFiles/SO.dir/common_utils.c.o"
 
 # External object files for target SO
 SO_EXTERNAL_OBJECTS =
 
-SO: CMakeFiles/SO.dir/p0.c.o
+SO: CMakeFiles/SO.dir/p3.c.o
 SO: CMakeFiles/SO.dir/processlist.c.o
 SO: CMakeFiles/SO.dir/common_utils.c.o
 SO: CMakeFiles/SO.dir/build.make

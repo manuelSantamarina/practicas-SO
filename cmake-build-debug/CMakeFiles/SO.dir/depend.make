@@ -3,7 +3,7 @@
 
 CMakeFiles/SO.dir/common_utils.c.o: \
  ../common_utils.c
-CMakeFiles/SO.dir/p0.c.o: \
+CMakeFiles/SO.dir/p3.c.o: \
  ../common_utils.h \
  ../dynamic_list.c \
  ../dynamic_list.h \
@@ -11,7 +11,7 @@ CMakeFiles/SO.dir/p0.c.o: \
  ../libp3.c \
  ../memorylist.c \
  ../memorylist.h \
- ../p0.c \
+ ../p3.c \
  ../processlist.h
 CMakeFiles/SO.dir/processlist.c.o: \
  ../processlist.c \

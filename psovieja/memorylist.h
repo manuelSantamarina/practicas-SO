@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <stddef.h>
-#include <sys/time.h>
-#include <time.h>
+#include <bits/types/time_t.h>
+
 typedef struct tNodeM* mPosL;
 
 typedef  int *addres;
@@ -13,6 +13,7 @@ typedef struct mItemL{
     addres maddres;
     size_t size;
     time_t time;
+    char filename;
     enum mtype type;
     key key;
 }mItemL;
